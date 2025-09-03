@@ -1,0 +1,124 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metric-engine"
+version = "0.1.0"
+description = "A pluggable metric engine with optional Django and Babel integrations."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+keywords = ["metric", "engine", "django", "babel", "plugins"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Software Development :: Libraries",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "pytest-cov>=4",
+    "coverage>=7",
+    "build>=1.0.0",
+    "twine>=5.0.0",
+    "pre-commit>=3.0.0",
+    "ruff>=0.1.0",
+    "myst-parser>=4.0.0",
+    "sphinx>=7",
+    "sphinx-autodoc-typehints>=2.0.0",
+    "sphinx-rtd-theme>=1.3.0",
+]
+babel = [
+    "Babel>=2.10"
+]
+test = [
+    "pytest>=7",
+    "pytest-cov>=4",
+    "coverage>=7",
+    "build>=1.0.0",
+    "twine>=5.0.0"
+]
+docs = [
+    "sphinx>=7",
+    "sphinx-autodoc-typehints>=2.0.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "myst-parser>=4.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/adieyal/metric_engine"
+Documentation = "https://your-docs-host/metric_engine"
+Repository = "https://github.com/adieyal/metric_engine"
+"Bug Tracker" = "https://github.com/adieyal/metric_engine/issues"
+
+[project.scripts]
+me-gen-stubs = "tools.gen_stubs:main"
+
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["metricengine*"]
+
+[tool.setuptools.package-data]
+metricengine = ["py.typed", "calculations/*.pyi", "typed_api.pyi", "engine.pyi"]
+
+
+[project.entry-points."metricengine.calculations"]
+sample = "metricengine.calculations"
+
+[tool.pytest.ini_options]
+addopts = "-q --cov=src/metricengine --cov-report=term-missing:skip-covered"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+branch = true
+source = ["src/metricengine"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+  "pragma: no cover",
+  "if __name__ == \"__main__\":",
+]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*.py" = ["B011"]
+
+[tool.ruff.isort]
+known-first-party = ["metricengine"]
