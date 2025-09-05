@@ -80,6 +80,7 @@ Unlike basic financial libraries, Metric Engine is designed for **production fin
    concepts/financial_value
    concepts/policy
    concepts/policy_context
+   concepts/formatting
    concepts/null_behaviour
    concepts/units
    concepts/registry_collections
@@ -105,6 +106,7 @@ Unlike basic financial libraries, Metric Engine is designed for **production fin
    howto/custom_reducers
    howto/new_unit
    howto/custom_policy
+   howto/internationalization
    howto/zero_denominator
    howto/testing_calcs
 

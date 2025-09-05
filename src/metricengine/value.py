@@ -281,6 +281,27 @@ class FinancialValue(Generic[U]):
         d = self.as_decimal()
         if d is None:
             return self.policy.none_text
+
+        # Check if we should use the new formatter system
+        if self.policy and self.policy.display:
+            from .formatters.base import get_formatter
+
+            fmt = get_formatter()
+            display = self.policy.display
+
+            # Determine formatting category
+            if self.unit and getattr(self.unit, "__name__", "").startswith("Money"):
+                return fmt.money(d, self.unit, display)
+            elif self.unit is Percent or self._is_percentage:
+                # For percentages, use the raw value since formatter will handle scaling
+                raw_value = self._value
+                if raw_value is None:
+                    return self.policy.none_text
+                return fmt.percent(raw_value, display)
+            else:
+                return fmt.number(d, display)
+
+        # Legacy formatting (backward compatibility)
         if self.unit is Percent:
             # For Percent unit, check if we need to multiply by 100
             # If percent_style="percent", as_decimal() already did the conversion

@@ -13,7 +13,44 @@ def default_quantizer_factory(decimal_places: int) -> Decimal:
 PercentDisplay = Literal["ratio", "percent"]
 
 # Keep imports at module scope so tests can patch
-from .units import Money, Unit
+from .units import Unit
+
+
+@dataclass(frozen=True, slots=True)
+class DisplayPolicy:
+    """
+    Immutable configuration for locale-aware formatting.
+
+    This policy controls how financial values are formatted for display,
+    including currency symbols, number formatting, and locale-specific
+    conventions.
+    """
+
+    # Locale/Currency
+    locale: str = "en_ZA"  # BCP-47 or ICU id; e.g., "en_US", "fr_FR", "en_ZA"
+    currency: str = "ZAR"  # ISO 4217 code (fallback if FV.unit is not Money)
+    currency_style: str = "standard"  # "standard" | "accounting"
+
+    # Number formatting
+    use_grouping: bool = True
+    min_int: Optional[int] = None
+    min_frac: Optional[int] = None
+    max_frac: Optional[int] = None
+    compact: Optional[str] = None  # None | "short" | "long" (e.g. 1.2K / 1.2 thousand)
+
+    # Percent formatting
+    percent_scale: str = "ratio"  # "ratio" (0.15 -> 15%) | "unit" (15 -> 15%)
+    percent_style: str = (
+        "standard"  # reserved: "standard" | "accounting" (same parens rules)
+    )
+
+    # Sign display
+    negative_parens: bool = (
+        False  # force (1.23) instead of -1.23 even outside accounting
+    )
+
+    # Fallbacks
+    fallback_locale: str = "en_US"  # used if locale invalid/unavailable
 
 
 @dataclass(frozen=True)
@@ -49,6 +86,9 @@ class Policy:
     currency_position: Literal["prefix", "suffix"] = "prefix"
     negative_parentheses: bool = False
     locale: Optional[str] = None
+
+    # Display policy for advanced formatting
+    display: Optional[DisplayPolicy] = None
 
     def __post_init__(self):
         if self.decimal_places < 0:
@@ -88,32 +128,22 @@ class Policy:
     def format_decimal(self, d: Decimal, unit: "type[Unit]") -> str:
         """
         Format a decimal with thousands separators, currency, and negative style.
-        Ensures parentheses wrap the whole string, e.g. "($1,234.56)".
+
+        This method is deprecated and will delegate to the built-in formatter
+        for backward compatibility.
         """
-        is_negative = d < 0
-        abs_d = -d if is_negative else d
+        from .formatters.base import get_formatter
 
-        # Format base number
-        base = (
-            f"{abs_d:,.{self.decimal_places}f}"
-            if self.thousands_sep
-            else f"{abs_d:.{self.decimal_places}f}"
+        formatter = get_formatter()
+        return formatter.format_decimal_legacy(
+            d=d,
+            unit=unit,
+            decimal_places=self.decimal_places,
+            thousands_sep=self.thousands_sep,
+            currency_symbol=self.currency_symbol,
+            currency_position=self.currency_position,
+            negative_parentheses=self.negative_parentheses,
         )
-
-        # Apply currency if applicable
-        if unit is Money and self.currency_symbol:
-            base = (
-                f"{self.currency_symbol}{base}"
-                if self.currency_position == "prefix"
-                else f"{base}{self.currency_symbol}"
-            )
-
-        # Apply sign/parentheses last
-        if is_negative:
-            if self.negative_parentheses:
-                return f"({base})"
-            return f"-{base}"
-        return base
 
     def format_percent(self, ratio_value: Decimal) -> str:
         """
@@ -121,12 +151,38 @@ class Policy:
         Always clamp to cap_percentage_at if provided.
         """
         if self.percent_display == "percent":
+            # Convert to percentage scale and apply quantization/clamping
             v = ratio_value * Decimal(100)
             if self.cap_percentage_at is not None:
                 v = min(v, self.cap_percentage_at)
-            return f"{self.quantize(v)}%"
-        # ratio mode
-        return self.format_decimal(self.quantize(ratio_value), unit=Unit)
+
+            # Apply quantization (this matches original behavior)
+            v = self.quantize(v)
+
+            # Convert back to ratio for formatter (since we use percent_scale="ratio")
+            ratio_for_formatter = v / Decimal(100)
+
+            # Always delegate to formatter
+            from .formatters.base import get_formatter
+
+            formatter = get_formatter()
+
+            # Use display policy if available, otherwise create one that matches legacy settings
+            if self.display is not None:
+                display = self.display
+            else:
+                # Create a DisplayPolicy that matches the Policy's legacy formatting settings
+                display = DisplayPolicy(
+                    locale="en_US",  # Use a locale that doesn't add spaces in numbers
+                    use_grouping=self.thousands_sep,
+                    max_frac=self.decimal_places,
+                    min_frac=self.decimal_places,
+                    negative_parens=self.negative_parentheses,
+                )
+            return formatter.percent(ratio_for_formatter, display)
+        else:
+            # ratio mode
+            return self.format_decimal(self.quantize(ratio_value), unit=Unit)
 
 
 # Default policy instance

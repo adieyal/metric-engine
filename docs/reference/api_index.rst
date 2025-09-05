@@ -13,6 +13,7 @@ Core Components
    units
    policy
    policy_context
+   formatting_reference
    null_behaviour
    registry
    registry_collections

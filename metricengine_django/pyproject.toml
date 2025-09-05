@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metric-engine-django"
+version = "0.1.0"
+description = "Django integration for metric-engine."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+dependencies = [
+  "metric-engine>=0.1.0",
+  "Django>=3.2",
+]
+classifiers = [
+  "Framework :: Django",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/adieyal/metricengine_django"
+Repository = "https://github.com/adieyal/metricengine_django"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["metricengine_django*"]
+
+[project.entry-points."metricengine.plugins"]
+django = "metricengine_django:Plugin"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
