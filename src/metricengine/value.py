@@ -341,6 +341,29 @@ class FinancialValue(Generic[U]):
     def is_percentage(self) -> bool:
         return self._is_percentage
 
+    def render(self, fmt: str = "text", **context) -> str:
+        """Render this FinancialValue using a registered renderer.
+        
+        Args:
+            fmt: Name of the renderer to use (default: "text")
+            **context: Additional context passed to the renderer
+            
+        Returns:
+            Rendered string representation
+            
+        Raises:
+            KeyError: If the specified renderer is not registered
+            
+        Example:
+            >>> amount = money(1234.56)
+            >>> amount.render("html")  # '<span class="fv positive">$1,234.56</span>'
+            >>> amount.render("html", css_classes="highlight")
+        """
+        from .rendering import get_renderer
+        
+        renderer = get_renderer(fmt)
+        return renderer.render(self, context=context)
+
     def __str__(self):
         # Delegate to as_str so Percent, Money and other units honor policy formatting
         return self.as_str()

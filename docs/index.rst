@@ -107,6 +107,7 @@ Unlike basic financial libraries, Metric Engine is designed for **production fin
    howto/new_unit
    howto/custom_policy
    howto/internationalization
+   howto/custom_rendering
    howto/zero_denominator
    howto/testing_calcs
 

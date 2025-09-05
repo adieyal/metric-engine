@@ -35,6 +35,9 @@ from .exceptions import (
 # Formatting utilities
 from .formatting import format_currency, format_percent
 
+# Rendering system
+from .rendering import Renderer, get_renderer, list_renderers, register_renderer
+
 # Null behavior configuration
 from .null_behaviour import NullBinaryMode, get_nulls
 
@@ -91,6 +94,11 @@ __all__ = [
     # Formatting
     "format_currency",
     "format_percent",
+    # Rendering
+    "Renderer",
+    "register_renderer",
+    "get_renderer", 
+    "list_renderers",
     # Utilities
     "inputs_needed_for",
     "CalculationService",
