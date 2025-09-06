@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..policy import DisplayPolicy
@@ -37,9 +37,7 @@ class BabelFormatter(Formatter):
         except Exception:
             return Locale.parse(display.fallback_locale)
 
-    def money(
-        self, amount: Decimal, unit: Optional[type], display: DisplayPolicy
-    ) -> str:
+    def money(self, amount: Decimal, unit: type | None, display: DisplayPolicy) -> str:
         """Format money using Babel's currency formatting."""
         loc = self._locale(display)
 
@@ -208,7 +206,11 @@ class BabelFormatter(Formatter):
                 ratio_value, grouping=display.use_grouping, **format_args
             )
         except TypeError:
+            # Fallback for older Babel versions that don't support grouping parameter
             s = bn.format_percent(ratio_value, **format_args)
+            # If grouping is disabled, manually remove thousands separators
+            if not display.use_grouping:
+                s = s.replace(",", "")
 
         if (
             display.percent_style == "accounting" or display.negative_parens
@@ -223,7 +225,7 @@ class BabelFormatter(Formatter):
         unit: type[Unit],
         decimal_places: int,
         thousands_sep: bool,
-        currency_symbol: Optional[str],
+        currency_symbol: str | None,
         currency_position: str,
         negative_parentheses: bool,
     ) -> str:

@@ -21,6 +21,7 @@ Core Components
    reductions
    utils
    exceptions
+   provenance
 
 Calculations
 ------------

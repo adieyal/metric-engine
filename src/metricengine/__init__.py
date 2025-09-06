@@ -35,9 +35,6 @@ from .exceptions import (
 # Formatting utilities
 from .formatting import format_currency, format_percent
 
-# Rendering system
-from .rendering import Renderer, get_renderer, list_renderers, register_renderer
-
 # Null behavior configuration
 from .null_behaviour import NullBinaryMode, get_nulls
 
@@ -45,8 +42,14 @@ from .null_behaviour import NullBinaryMode, get_nulls
 from .policy import DEFAULT_POLICY, Policy
 from .policy_context import PolicyResolution, get_policy, use_policy
 
+# Provenance and tracing
+from .provenance import calc_span, explain, get_provenance_graph, to_trace_json
+
 # Registry and calculation system
 from .registry import calc, deps, get, is_registered, list_calculations
+
+# Rendering system
+from .rendering import Renderer, get_renderer, list_renderers, register_renderer
 
 # Shortcuts and utilities
 from .shortcuts import inputs_needed_for
@@ -97,7 +100,7 @@ __all__ = [
     # Rendering
     "Renderer",
     "register_renderer",
-    "get_renderer", 
+    "get_renderer",
     "list_renderers",
     # Utilities
     "inputs_needed_for",
@@ -111,4 +114,9 @@ __all__ = [
     "load_plugins",
     # Typed API
     "get_calc",
+    # Provenance and tracing
+    "calc_span",
+    "explain",
+    "get_provenance_graph",
+    "to_trace_json",
 ]

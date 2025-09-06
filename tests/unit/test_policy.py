@@ -160,8 +160,8 @@ class TestPolicy:
         # Test that quantize method uses the custom factory
         assert policy.quantize(Decimal("123.456")) == Decimal("123.46")
 
-    @patch("metricengine.policy.Money")
-    @patch("metricengine.policy.Unit")
+    @patch("metricengine.units.Money")
+    @patch("metricengine.units.Unit")
     def test_format_decimal_basic(self, mock_unit, mock_money):
         """Test format_decimal method with basic formatting."""
         policy = Policy(decimal_places=2, thousands_sep=True)
@@ -175,8 +175,8 @@ class TestPolicy:
         result = policy_no_sep.format_decimal(Decimal("1234.56"), mock_unit)
         assert result == "1234.56"
 
-    @patch("metricengine.policy.Money")
-    @patch("metricengine.policy.Unit")
+    @patch("metricengine.units.Money")
+    @patch("metricengine.units.Unit")
     def test_format_decimal_currency_prefix(self, mock_unit, mock_money):
         """Test format_decimal method with currency symbol as prefix."""
         policy = Policy(
@@ -189,8 +189,8 @@ class TestPolicy:
         result = policy.format_decimal(Decimal("1234.56"), mock_money)
         assert result == "$1,234.56"
 
-    @patch("metricengine.policy.Money")
-    @patch("metricengine.policy.Unit")
+    @patch("metricengine.units.Money")
+    @patch("metricengine.units.Unit")
     def test_format_decimal_currency_suffix(self, mock_unit, mock_money):
         """Test format_decimal method with currency symbol as suffix."""
         policy = Policy(
@@ -203,8 +203,8 @@ class TestPolicy:
         result = policy.format_decimal(Decimal("1234.56"), mock_money)
         assert result == "1,234.56€"
 
-    @patch("metricengine.policy.Money")
-    @patch("metricengine.policy.Unit")
+    @patch("metricengine.units.Money")
+    @patch("metricengine.units.Unit")
     def test_format_decimal_negative_parentheses(self, mock_unit, mock_money):
         """Test format_decimal method with negative parentheses."""
         policy = Policy(
@@ -218,8 +218,8 @@ class TestPolicy:
         result = policy.format_decimal(Decimal("-1234.56"), mock_money)
         assert result == "($1,234.56)"
 
-    @patch("metricengine.policy.Money")
-    @patch("metricengine.policy.Unit")
+    @patch("metricengine.units.Money")
+    @patch("metricengine.units.Unit")
     def test_format_decimal_non_money_unit(self, mock_unit, mock_money):
         """Test format_decimal method with non-money unit (no currency symbol)."""
         policy = Policy(
@@ -337,7 +337,7 @@ class TestPolicyEdgeCases:
 
     def test_very_large_cap_percentage(self):
         """Test policy with very large cap percentage."""
-        policy = Policy(cap_percentage_at=Decimal("999999.99"))
+        policy = Policy(cap_percentage_at=Decimal("999999.99"), thousands_sep=False)
         result = policy.format_percent(Decimal("1000.0"))  # 100,000%
         assert result == "100000.00%"
 

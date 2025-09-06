@@ -86,6 +86,7 @@ Unlike basic financial libraries, Metric Engine is designed for **production fin
    concepts/registry_collections
    concepts/engine
    concepts/reductions_utils
+   concepts/provenance
 
 .. toctree::
    :maxdepth: 2
@@ -110,6 +111,9 @@ Unlike basic financial libraries, Metric Engine is designed for **production fin
    howto/custom_rendering
    howto/zero_denominator
    howto/testing_calcs
+   howto/provenance_configuration
+   howto/provenance_usage
+   howto/provenance_best_practices
 
 .. toctree::
    :maxdepth: 2

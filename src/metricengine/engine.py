@@ -138,7 +138,159 @@ class Engine:
         """
         # Delegate to calculate_many for consistency
         results = self.calculate_many({name}, ctx, allow_partial=allow_partial)
-        return results.get(name)
+        result = results.get(name)
+
+        # Add calculation-specific provenance if result is a FinancialValue
+        if isinstance(result, FinancialValue) and result is not None:
+            result = self._add_calculation_provenance(name, result, ctx)
+
+        return result
+
+    def _add_calculation_provenance(
+        self, calc_name: str, result: FinancialValue, ctx: dict
+    ) -> FinancialValue:
+        """Add calculation-specific provenance to a result.
+
+        Args:
+            calc_name: Name of the calculation
+            result: The calculated FinancialValue result
+            ctx: Context dictionary with input names and values
+
+        Returns:
+            FinancialValue with calculation provenance
+        """
+        try:
+            from .provenance import Provenance, hash_node
+            from .provenance_config import (
+                log_provenance_error,
+                should_fail_on_error,
+                should_track_calculations,
+            )
+
+            # Check if calculation tracking is enabled
+            if not should_track_calculations():
+                return result
+
+            # Extract parent FinancialValues from context with error handling
+            parents = []
+            input_names = {}
+
+            for key, value in ctx.items():
+                try:
+                    if isinstance(value, FinancialValue):
+                        parents.append(value)
+                        if hasattr(value, "_prov") and value._prov:
+                            input_names[value._prov.id] = str(key)
+                    else:
+                        # Create a temporary FinancialValue for non-FV inputs (including None) to get provenance
+                        try:
+                            temp_fv = FinancialValue(value, policy=result.policy)
+                            parents.append(temp_fv)
+                            if hasattr(temp_fv, "_prov") and temp_fv._prov:
+                                input_names[temp_fv._prov.id] = str(key)
+                        except Exception as temp_error:
+                            log_provenance_error(
+                                temp_error,
+                                "_add_calculation_provenance_temp_fv",
+                                calculation=calc_name,
+                                input_key=key,
+                            )
+                            # Continue without this input
+
+                except Exception as input_error:
+                    log_provenance_error(
+                        input_error,
+                        "_add_calculation_provenance_input",
+                        calculation=calc_name,
+                        input_key=key,
+                    )
+                    # Continue with other inputs
+
+            # Create metadata with input names and calculation context
+            try:
+                meta = {"calculation": str(calc_name), "input_names": input_names}
+            except Exception as meta_error:
+                log_provenance_error(
+                    meta_error,
+                    "_add_calculation_provenance_meta",
+                    calculation=calc_name,
+                )
+                meta = {"calculation": str(calc_name)}
+
+            # Generate provenance ID for this calculation with error handling
+            try:
+                op = f"calc:{calc_name}"
+                prov_id = hash_node(op, tuple(parents), result.policy, meta)
+            except Exception as hash_error:
+                log_provenance_error(
+                    hash_error,
+                    "_add_calculation_provenance_hash",
+                    calculation=calc_name,
+                )
+                if should_fail_on_error():
+                    raise
+                return result  # Graceful degradation
+
+            # Create new provenance record with error handling
+            try:
+                parent_ids = []
+                for parent in parents:
+                    try:
+                        if hasattr(parent, "_prov") and parent._prov:
+                            parent_ids.append(parent._prov.id)
+                    except Exception as parent_error:
+                        log_provenance_error(
+                            parent_error,
+                            "_add_calculation_provenance_parent_id",
+                            calculation=calc_name,
+                        )
+                        # Continue with other parents
+
+                prov = Provenance(
+                    id=prov_id, op=op, inputs=tuple(parent_ids), meta=meta
+                )
+
+                # Return new FinancialValue with calculation provenance
+                return FinancialValue(
+                    result._value,
+                    policy=result.policy,
+                    unit=result.unit,
+                    _is_percentage=result._is_percentage,
+                    _prov=prov,
+                )
+
+            except Exception as prov_error:
+                log_provenance_error(
+                    prov_error,
+                    "_add_calculation_provenance_create",
+                    calculation=calc_name,
+                )
+                if should_fail_on_error():
+                    raise
+                return result  # Graceful degradation
+
+        except ImportError:
+            # Provenance module not available - graceful degradation
+            return result
+        except Exception as e:
+            # Log unexpected errors
+            try:
+                from .provenance_config import (
+                    log_provenance_error,
+                    should_fail_on_error,
+                )
+
+                log_provenance_error(
+                    e, "_add_calculation_provenance", calculation=calc_name
+                )
+
+                if should_fail_on_error():
+                    raise
+            except ImportError:
+                pass
+
+            # Graceful degradation - return original result if provenance fails
+            return result
 
     def constant(self, value: int | float | Decimal | None) -> FinancialValue:
         """
@@ -383,7 +535,14 @@ class Engine:
         result = {}
         for key in targets:
             if key in cache and key not in failed_targets:
-                result[key] = cache[key]  # should be FinancialValue already
+                cached_result = cache[key]
+                # Add calculation provenance if this is a registered calculation
+                if is_registered(key) and isinstance(cached_result, FinancialValue):
+                    result[key] = self._add_calculation_provenance(
+                        key, cached_result, ctx
+                    )
+                else:
+                    result[key] = cached_result  # should be FinancialValue already
         return result
 
     def set_metric_policy(self, name: str, policy: Policy) -> None:
