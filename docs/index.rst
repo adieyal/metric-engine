@@ -28,6 +28,9 @@ Key Features
 **📐 Decimal Precision**
    Built on Python's ``Decimal`` type to eliminate floating-point precision issues that plague financial calculations.
 
+**🔍 Complete Calculation Traceability**
+   Automatic provenance tracking creates complete audit trails for every calculation. Generate human-readable explanations, export JSON graphs for compliance, and trace exactly how any value was derived.
+
 **🔧 Extensible Calculation Engine**
    Register custom calculations in organized collections. The dependency engine automatically resolves calculation graphs and handles circular dependencies.
 
@@ -41,6 +44,7 @@ Quick Example
 
    from metricengine import FV
    from metricengine.units import Money, Percent
+   from metricengine.provenance import explain, to_trace_json
 
    # Type-safe financial calculations
    revenue = FV(150000, Money)
@@ -53,6 +57,20 @@ Quick Example
    print(f"Revenue: {revenue}")           # Revenue: $150,000.00
    print(f"Net Income: {net_income}")     # Net Income: $112,500.00
 
+   # 🔍 Automatic calculation traceability
+   print("\nHow was net income calculated?")
+   print(explain(net_income))
+   # Output:
+   # subtract(150000.00, 37500.00) = 112500.00
+   #   ├─ literal(150000.00)
+   #   └─ multiply(150000.00, 0.25) = 37500.00
+   #     ├─ literal(150000.00)
+   #     └─ literal(0.25)
+
+   # Export complete audit trail as JSON
+   audit_trail = to_trace_json(net_income)
+   print(f"Audit trail contains {len(audit_trail['nodes'])} calculation steps")
+
    # Graceful handling of missing data
    missing_data = None
    safe_calc = revenue * missing_data     # Returns FV.none(), doesn't crash
@@ -64,7 +82,7 @@ Unlike basic financial libraries, Metric Engine is designed for **production fin
 
 * **No silent errors**: Invalid operations return ``None`` or raise clear exceptions
 * **Policy consistency**: Rounding, formatting, and error handling follow configurable policies
-* **Calculation traceability**: Dependencies between calculations are explicit and validated
+* **Complete audit trails**: Every calculation maintains tamper-evident provenance for debugging and compliance
 * **Framework integration**: Optional Django plugins and extensible architecture
 
 .. toctree::

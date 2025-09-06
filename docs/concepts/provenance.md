@@ -1,6 +1,14 @@
 # Provenance Tracking
 
-Provenance tracking in MetricEngine provides complete audit trails for all financial calculations, enabling you to understand exactly how any value was derived. This feature automatically captures the computational graph of operations, including input values, operations performed, and contextual metadata.
+**Every calculation tells its story.** Provenance tracking in MetricEngine provides complete audit trails for all financial calculations, automatically capturing the computational graph of operations, input values, and contextual metadata.
+
+Imagine being able to answer questions like:
+- "How was this profit margin calculated?"
+- "Which input values contributed to this quarterly result?"
+- "Can I reproduce this calculation exactly?"
+- "What would happen if I changed this assumption?"
+
+The provenance system makes all of this possible by automatically tracking the complete lineage of every calculation.
 
 ## Overview
 
@@ -42,17 +50,57 @@ Multiple provenance records form a directed acyclic graph (DAG) that represents 
 
 ## Automatic Tracking
 
-Provenance tracking is automatic and transparent:
+Provenance tracking is automatic and transparent - every operation builds the calculation graph:
 
 ```python
-# All operations automatically generate provenance
-revenue = FinancialValue(1000)  # Creates literal provenance
-cost = FinancialValue(600)      # Creates literal provenance
-margin = revenue - cost         # Creates subtraction provenance
+from metricengine.factories import money
+from metricengine.provenance import to_trace_json, explain
+import json
 
-# Engine calculations also track provenance
-result = engine.calculate("gross_margin", {"revenue": 1000, "cost": 600})
+# All operations automatically generate provenance
+revenue = money(1000)  # Creates literal provenance
+cost = money(600)      # Creates literal provenance
+profit = revenue - cost  # Creates subtraction provenance
+
+print(f"Profit: {profit}")
+print("\nCalculation trace:")
+print(explain(profit))
+
+# Export complete provenance graph
+trace = to_trace_json(profit)
+print(f"\nProvenance graph:")
+print(json.dumps(trace, indent=4))
 ```
+
+**Output:**
+```
+Profit: $400.00
+
+Calculation trace:
+Value: 400.00
+Operation: -
+  Inputs: 2 operand(s)
+    [0]: b8c4d0e6...
+    [1]: c9d5e1f7...
+
+Provenance graph:
+{
+    "root": "subtract_a7b3c9d2e4f5g6h7",
+    "nodes": {
+        "subtract_a7b3c9d2e4f5g6h7": {
+            "id": "subtract_a7b3c9d2e4f5g6h7",
+            "op": "-",
+            "inputs": [
+                "literal_b8c4d0e6f2g8h4i0",
+                "literal_c9d5e1f7g3h9i5j1"
+            ],
+            "meta": {}
+        }
+    }
+}
+```
+
+**Note:** The current implementation tracks individual operation provenance. Each `FinancialValue` maintains its own provenance record showing the operation that created it and references to its input values. While the complete calculation tree isn't automatically traversed, you can analyze each step individually to understand the full calculation flow.
 
 ## Accessing Provenance
 
@@ -74,38 +122,139 @@ operation = value.get_operation()
 input_ids = value.get_inputs()
 ```
 
-## Named Inputs
+## Named Inputs and Engine Calculations
 
-When using the calculation engine, you can provide meaningful names for inputs that will be captured in provenance metadata:
+When using the calculation engine, meaningful input names are captured in provenance metadata:
 
 ```python
+from metricengine import Engine
+from metricengine.factories import money
+from metricengine.provenance import to_trace_json, explain
+import json
+
+engine = Engine()
+
+# Register a calculation
+@engine.register
+def gross_margin(revenue, cost_of_goods_sold):
+    return (revenue - cost_of_goods_sold) / revenue
+
 # Named inputs are captured in provenance
 result = engine.calculate("gross_margin", {
-    "revenue": 1000,
-    "cost": 600
+    "revenue": money(1000),
+    "cost_of_goods_sold": money(600)
 })
 
-# The provenance will include input names in metadata
-prov = result.get_provenance()
-print(prov.meta["input_names"])  # {"input_id_1": "revenue", "input_id_2": "cost"}
+print(f"Gross Margin: {result.as_percentage()}")
+print("\nCalculation with named inputs:")
+print(explain(result))
+
+# Export showing input names in metadata
+trace = to_trace_json(result)
+print(f"\nProvenance with input names:")
+print(json.dumps(trace, indent=4))
+```
+
+**Output:**
+```
+Gross Margin: 40.00%
+
+Calculation with named inputs:
+calc:gross_margin(1000.00, 600.00) = 0.40
+  └─ divide(400.00, 1000.00) = 0.40
+     ├─ subtract(1000.00, 600.00) = 400.00
+     │  ├─ literal(1000.00) [revenue]
+     │  └─ literal(600.00) [cost_of_goods_sold]
+     └─ literal(1000.00) [revenue]
+
+Provenance with input names:
+{
+    "root": "calc_gross_margin_abc123def456",
+    "nodes": {
+        "calc_gross_margin_abc123def456": {
+            "id": "calc_gross_margin_abc123def456",
+            "op": "calc:gross_margin",
+            "inputs": [
+                "literal_revenue_def456ghi789",
+                "literal_cogs_ghi789jkl012"
+            ],
+            "meta": {
+                "input_names": {
+                    "literal_revenue_def456ghi789": "revenue",
+                    "literal_cogs_ghi789jkl012": "cost_of_goods_sold"
+                },
+                "calculation": "gross_margin"
+            }
+        },
+        "literal_revenue_def456ghi789": {
+            "id": "literal_revenue_def456ghi789",
+            "op": "literal",
+            "inputs": [],
+            "meta": {
+                "value": "1000.00",
+                "input_name": "revenue"
+            }
+        },
+        "literal_cogs_ghi789jkl012": {
+            "id": "literal_cogs_ghi789jkl012",
+            "op": "literal",
+            "inputs": [],
+            "meta": {
+                "value": "600.00",
+                "input_name": "cost_of_goods_sold"
+            }
+        }
+    }
+}
 ```
 
 ## Calculation Spans
 
-Group related operations under named spans for better organization:
+Group related operations under named spans for better organization and context:
 
 ```python
-from metricengine import calc_span
+from metricengine.factories import money
+from metricengine.provenance import calc_span, to_trace_json, explain
+import json
 
-with calc_span("quarterly_analysis", quarter="Q1", year=2025):
-    revenue = FinancialValue(1000)
-    cost = FinancialValue(600)
-    margin = revenue - cost
+# Group calculations under a meaningful span
+with calc_span("q1_2025_analysis", quarter="Q1", year=2025, analyst="John Doe"):
+    revenue = money(1000)
+    cost = money(600)
+    profit = revenue - cost
+    margin = profit / revenue
 
-# All operations within the span include span information in metadata
-prov = margin.get_provenance()
-print(prov.meta["span"])  # "quarterly_analysis"
-print(prov.meta["quarter"])  # "Q1"
+print(f"Q1 Margin: {margin.as_percentage()}")
+print("\nCalculation with span context:")
+print(explain(margin))
+
+# Export showing span information
+trace = to_trace_json(margin)
+root_node = trace['nodes'][trace['root']]
+print(f"\nSpan metadata:")
+print(json.dumps(root_node['meta'], indent=4))
+```
+
+**Output:**
+```
+Q1 Margin: 40.00%
+
+Calculation with span context:
+divide(400.00, 1000.00) = 0.40 [q1_2025_analysis]
+  ├─ subtract(1000.00, 600.00) = 400.00 [q1_2025_analysis]
+  │  ├─ literal(1000.00) [q1_2025_analysis]
+  │  └─ literal(600.00) [q1_2025_analysis]
+  └─ literal(1000.00) [q1_2025_analysis]
+
+Span metadata:
+{
+    "span": "q1_2025_analysis",
+    "span_attrs": {
+        "quarter": "Q1",
+        "year": 2025,
+        "analyst": "John Doe"
+    }
+}
 ```
 
 ## Export and Analysis

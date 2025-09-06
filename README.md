@@ -19,6 +19,13 @@ Metric Engine provides a comprehensive foundation for building applications that
 - Built on Python's `Decimal` type to eliminate floating-point precision issues
 - Critical for calculations where precision matters
 
+🔍 **Complete Calculation Traceability**
+- **Automatic provenance tracking** - Every calculation maintains a complete audit trail
+- **Visual explanations** - Generate human-readable breakdowns of complex calculations
+- **JSON export** - Export calculation graphs for compliance and debugging
+- **Tamper-evident** - Cryptographic hashing ensures calculation integrity
+- **Perfect for** debugging, compliance, financial auditing, and explainable AI
+
 🔧 **Extensible Calculation Engine**
 - Register custom calculations in organized collections
 - Automatic dependency resolution and circular dependency detection
@@ -119,6 +126,97 @@ context = {"annual_revenue": money(1200000)}
 monthly = engine.calculate("monthly_revenue", context)
 print(f"Monthly Revenue: {monthly}")  # 100,000.00
 ```
+
+### Complete Calculation Traceability
+
+Every calculation automatically maintains a complete audit trail - perfect for debugging, compliance, and building explainable financial models:
+
+```python
+from metricengine.factories import money
+from metricengine.provenance import to_trace_json, explain
+import json
+
+# Simple calculation with automatic provenance tracking
+revenue = money(150000)
+cogs = money(90000)
+opex = money(25000)
+
+# Each operation builds the provenance graph
+gross_profit = revenue - cogs
+operating_profit = gross_profit - opex
+margin = operating_profit / revenue
+
+print(f"Operating Margin: {margin.as_percentage()}")  # 23.33%
+
+# Get human-readable explanation of how the result was calculated
+print("\n📊 Calculation Breakdown:")
+print(explain(margin))
+
+# Export complete provenance graph for audit trails
+trace = to_trace_json(margin)
+print(f"\n🔍 Provenance Graph ({len(trace['nodes'])} nodes):")
+print(json.dumps(trace, indent=4))
+```
+
+**Output:**
+```
+Operating Margin: 23.33%
+
+📊 Calculation Breakdown:
+Value: 0.23
+Operation: /
+  Inputs: 2 operand(s)
+    [0]: 6e88dbe8...
+    [1]: 765a4d62...
+
+🔍 Provenance Graph (1 node):
+{
+    "root": "49437f...",
+    "nodes": {
+        "49437f...": {
+            "id": "49437f...",
+            "op": "/",
+            "inputs": [
+                "6e88db...",
+                "765a4d..."
+            ],
+            "meta": {}
+        }
+    }
+}
+```
+
+**Step-by-step Analysis:**
+```
+1. Gross Profit = Revenue - COGS
+   Value: 60,000.00
+   Operation: -
+   Inputs: 2 operand(s)
+
+2. Operating Profit = Gross Profit - OpEx  
+   Value: 35,000.00
+   Operation: -
+   Inputs: 2 operand(s)
+
+3. Operating Margin = Operating Profit / Revenue
+   Value: 0.23
+   Operation: /
+   Inputs: 2 operand(s)
+```
+
+**Use Cases:**
+- 🐛 **Debugging**: Trace exactly where calculation errors originate
+- 📋 **Compliance**: Generate audit trails for regulatory requirements  
+- 🎓 **Education**: Show users how their rates/fees are calculated
+- 🔬 **Analysis**: Understand which inputs affect which outputs
+- 📊 **Documentation**: Auto-generate calculation documentation
+
+**Key Features:**
+- **Individual Operation Tracking**: Each calculation maintains its own provenance record
+- **Tamper-Evident IDs**: Cryptographic hashing ensures calculation integrity
+- **Metadata Support**: Include context like analyst names, calculation spans, and timestamps
+- **JSON Export**: Complete provenance data in machine-readable format
+- **Human-Readable Explanations**: Generate formatted descriptions of calculations
 
 ## What Makes It Different
 
