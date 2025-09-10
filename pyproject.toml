@@ -6,23 +6,33 @@ build-backend = "setuptools.build_meta"
 name = "metric-engine"
 version = "0.1.0"
 description = "A pluggable metric engine with optional Django and Babel integrations."
-readme = "README.md"
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [
-  { name = "Your Name", email = "you@example.com" }
+  { name = "Adi Eyal", email = "adi@burgercom.co.za" }
 ]
-keywords = ["metric", "engine", "django", "babel", "plugins"]
+keywords = [
+  "metric", "engine", "django", "babel", "plugins", 
+  "financial", "calculations", "decimal", "precision",
+  "type-safe", "provenance", "audit-trail"
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
+  "Intended Audience :: Financial and Insurance Industry",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Software Development :: Libraries",
+  "Topic :: Office/Business :: Financial",
+  "Topic :: Scientific/Engineering :: Mathematics",
 ]
 dependencies = []
 
@@ -58,10 +68,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/adieyal/metric_engine"
-Documentation = "https://your-docs-host/metric_engine"
-Repository = "https://github.com/adieyal/metric_engine"
-"Bug Tracker" = "https://github.com/adieyal/metric_engine/issues"
+Homepage = "https://github.com/adieyal/metric-engine"
+Documentation = "https://metric-engine.readthedocs.io/"
+Repository = "https://github.com/adieyal/metric-engine"
+"Bug Tracker" = "https://github.com/adieyal/metric-engine/issues"
 
 [project.scripts]
 me-gen-stubs = "tools.gen_stubs:main"
