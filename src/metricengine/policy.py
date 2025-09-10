@@ -16,7 +16,7 @@ PercentDisplay = Literal["ratio", "percent"]
 from .units import Unit
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class DisplayPolicy:
     """
     Immutable configuration for locale-aware formatting.
@@ -25,6 +25,7 @@ class DisplayPolicy:
     including currency symbols, number formatting, and locale-specific
     conventions.
     """
+ 
 
     # Locale/Currency
     locale: str = "en_ZA"  # BCP-47 or ICU id; e.g., "en_US", "fr_FR", "en_ZA"
