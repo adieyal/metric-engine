@@ -50,7 +50,7 @@ from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar, overload
 from .null_behaviour import NullBinaryMode, get_nulls
 from .policy import DEFAULT_POLICY, Policy, default_quantizer_factory
 from .policy_context import PolicyResolution, get_policy, get_resolution
-from .units import Dimensionless, Money, Percent, Ratio, Unit
+from .units import Dimensionless, Money, NewUnit, Percent, Ratio, Unit
 from .utils import SupportsDecimal, to_decimal
 
 # Import provenance types with TYPE_CHECKING to avoid circular imports
@@ -201,7 +201,9 @@ def _div_result_unit(a: type[Unit], b: type[Unit]) -> type[Unit] | None:
 class FinancialValue(Generic[U]):
     _value: SupportsDecimal
     policy: Policy | None = None
-    unit: type[Unit] = Dimensionless
+    unit: NewUnit | type[
+        Unit
+    ] | None = Dimensionless  # Support both new and legacy unit systems, default to legacy for backward compatibility
     _is_percentage: bool = field(default=False, compare=False)
     _prov: Provenance | None = field(default=None, compare=False)
 
@@ -209,6 +211,23 @@ class FinancialValue(Generic[U]):
     def __post_init__(self) -> None:
         if self.policy is None:
             object.__setattr__(self, "policy", DEFAULT_POLICY)
+
+        # Handle unit assignment - default to None for new unit system
+        if self.unit is None:
+            # Keep None for new unit system (no default unit)
+            pass
+        elif isinstance(self.unit, type) and issubclass(self.unit, Unit):
+            # Legacy unit system - keep as is for backward compatibility
+            pass
+        elif isinstance(self.unit, NewUnit):
+            # New unit system - validate it's a proper NewUnit instance
+            pass
+        else:
+            # Invalid unit type
+            raise TypeError(
+                f"Unit must be NewUnit instance, Unit subclass, or None, got {type(self.unit)}"
+            )
+
         v = self._value
         if v is None:
             # Generate literal provenance for None values if not provided
@@ -245,8 +264,18 @@ class FinancialValue(Generic[U]):
             if not is_provenance_available() or not should_track_literals():
                 return
 
+            # Include unit information in metadata
+            meta = {}
+            if self.unit is not None:
+                if isinstance(self.unit, NewUnit):
+                    meta["unit"] = str(self.unit)  # "Category[code]" format
+                elif isinstance(self.unit, type) and issubclass(self.unit, Unit):
+                    meta["unit"] = self.unit.__name__  # Legacy format
+                else:
+                    meta["unit"] = str(self.unit)
+
             prov_id = hash_literal(self._value, self.policy)
-            prov = Provenance(id=prov_id, op="literal", inputs=(), meta={})
+            prov = Provenance(id=prov_id, op="literal", inputs=(), meta=meta)
             object.__setattr__(self, "_prov", prov)
 
         except ImportError:
@@ -322,6 +351,18 @@ class FinancialValue(Generic[U]):
             try:
                 if meta:
                     combined_meta.update(meta)
+
+                # Include unit information in operation provenance
+                if self.unit is not None:
+                    if isinstance(self.unit, NewUnit):
+                        combined_meta["unit"] = str(
+                            self.unit
+                        )  # "Category[code]" format
+                    elif isinstance(self.unit, type) and issubclass(self.unit, Unit):
+                        combined_meta["unit"] = self.unit.__name__  # Legacy format
+                    else:
+                        combined_meta["unit"] = str(self.unit)
+
             except Exception as meta_error:
                 log_provenance_error(meta_error, "_with_meta_merge", operation=op)
 
@@ -420,6 +461,15 @@ class FinancialValue(Generic[U]):
         other: FinancialValue | SupportsDecimal | None, fallback: type[Unit]
     ) -> type[Unit]:
         if isinstance(other, FinancialValue):
+            return other.unit
+        return fallback
+
+    @staticmethod
+    def _new_unit_of(
+        other: FinancialValue | SupportsDecimal | None, fallback: NewUnit | None = None
+    ) -> NewUnit | None:
+        """Get the NewUnit from a FinancialValue or return fallback for raw values."""
+        if isinstance(other, FinancialValue) and isinstance(other.unit, NewUnit):
             return other.unit
         return fallback
 
@@ -551,16 +601,166 @@ class FinancialValue(Generic[U]):
         renderer = get_renderer(fmt)
         return renderer.render(self, context=context)
 
+    def to(
+        self,
+        unit: NewUnit,
+        *,
+        at: str | None = None,
+        meta: dict[str, str] | None = None,
+    ) -> FinancialValue:
+        """Convert this FinancialValue to a different unit.
+
+        This method performs explicit unit conversion using the registered
+        conversion functions. It creates a new FinancialValue with the target
+        unit and converted value, preserving the original policy and percentage flag.
+
+        Args:
+            unit: Target unit to convert to
+            at: Optional timestamp for rate lookups (e.g., "2025-09-06T10:30:00Z")
+            meta: Optional metadata dictionary for conversion context
+                 (e.g., {"rate": "0.79", "source": "ECB"})
+
+        Returns:
+            New FinancialValue with the target unit and converted value
+
+        Raises:
+            KeyError: If no conversion is registered between the units
+            ValueError: If this FinancialValue has a None value
+            TypeError: If this FinancialValue doesn't use the new unit system
+
+        Example:
+            >>> from metricengine import FinancialValue as FV
+            >>> from metricengine.units import MoneyUnit
+            >>>
+            >>> usd = MoneyUnit("USD")
+            >>> gbp = MoneyUnit("GBP")
+            >>> amount = FV(100, unit=usd)
+            >>>
+            >>> # Convert with default context
+            >>> converted = amount.to(gbp)
+            >>>
+            >>> # Convert with specific rate and timestamp
+            >>> converted = amount.to(gbp, at="2025-09-06T10:30:00Z",
+            ...                      meta={"rate": "0.79", "source": "ECB"})
+        """
+        # Check if value is None
+        if self._value is None:
+            raise ValueError("Cannot convert FinancialValue with None value")
+
+        # Check if this FinancialValue uses the new unit system
+        if not isinstance(self.unit, NewUnit):
+            raise TypeError(
+                f"Conversion only supported for new unit system (NewUnit), "
+                f"got {type(self.unit)}"
+            )
+
+        # Import here to avoid circular imports
+        from .units import convert_decimal
+
+        # Handle same-unit conversions
+        if self.unit == unit:
+            # Return equivalent FinancialValue without conversion
+            return FinancialValue(
+                self._value,
+                policy=self.policy,
+                unit=unit,
+                _is_percentage=self._is_percentage,
+                _prov=self._prov,  # Keep original provenance for same-unit
+            )
+
+        # Perform conversion
+        try:
+            converted_value = convert_decimal(
+                self._value, self.unit, unit, at=at, meta=meta
+            )
+        except (KeyError, ValueError) as e:
+            # Re-raise with more context about the FinancialValue
+            raise type(e)(
+                f"Failed to convert FinancialValue from {self.unit} to {unit}: {e}"
+            ) from e
+
+        # Check if conversion actually happened (value changed or units are different)
+        # In permissive mode, convert_decimal returns original value if conversion fails
+        if converted_value == self._value and self.unit != unit:
+            # Conversion failed in permissive mode - check if we should return original
+            from .units import get_current_conversion_policy
+
+            policy = get_current_conversion_policy()
+            if not policy.strict:
+                # In permissive mode, return original FinancialValue unchanged
+                return FinancialValue(
+                    self._value,
+                    policy=self.policy,
+                    unit=self.unit,  # Keep original unit
+                    _is_percentage=self._is_percentage,
+                    _prov=self._prov,
+                )
+
+        # Create conversion provenance metadata
+        conversion_meta = {
+            "from": str(self.unit),
+            "to": str(unit),
+            "operation_type": "conversion",
+        }
+        if at:
+            conversion_meta["at"] = at
+        if meta:
+            conversion_meta.update({f"ctx_{k}": v for k, v in meta.items()})
+
+        # Create new FinancialValue with converted value and target unit
+        result = FinancialValue(
+            converted_value,
+            policy=self.policy,
+            unit=unit,
+            _is_percentage=self._is_percentage,
+        )
+
+        # Add conversion provenance
+        return result._with(
+            converted_value, op="convert", parents=(self,), meta=conversion_meta
+        )
+
     def __str__(self):
         # Delegate to as_str so Percent, Money and other units honor policy formatting
         return self.as_str()
 
+    def _get_unit_repr(self) -> str:
+        """Get string representation of unit for repr output.
+
+        Handles NewUnit, legacy Unit, and None cases with proper string formatting.
+        Provides fallback to str(unit) for edge cases.
+
+        Returns:
+            String representation of the unit suitable for __repr__ output
+        """
+        if self.unit is None:
+            return "None"
+        elif isinstance(self.unit, NewUnit):
+            return str(self.unit)  # Uses NewUnit's __str__ method: "Category[code]"
+        elif isinstance(self.unit, type) and issubclass(self.unit, Unit):
+            return self.unit.__name__  # Legacy unit system
+        else:
+            # Fallback for edge cases
+            return str(self.unit)
+
     def __repr__(self) -> str:
-        return (
-            f"FinancialValue(value={self._value}, "
-            f"policy={self.policy}, unit={self.unit.__name__}, "
-            f"is_percentage={self._is_percentage})"
-        )
+        # Always include value parameter as the first element
+        parts = [f"value={self._value}"]
+
+        # Compare policy against DEFAULT_POLICY and include only if different
+        if self.policy != DEFAULT_POLICY:
+            parts.append(f"policy={self.policy}")
+
+        # Compare unit against Dimensionless and include only if different
+        if self.unit != Dimensionless:
+            unit_repr = self._get_unit_repr()
+            parts.append(f"unit={unit_repr}")
+
+        # Compare _is_percentage against False and include only if different
+        if self._is_percentage is False:
+            parts.append(f"is_percentage={self._is_percentage}")
+
+        return f"FinancialValue({', '.join(parts)})"
 
     # ------------------------------------------------ arithmetic dunders
 
@@ -630,10 +830,21 @@ class FinancialValue(Generic[U]):
         if a is None or b in (None, D(0)):
             return FinancialValue.none(self.policy)
 
-        other_unit = self._unit_of(other, Dimensionless)
-        result_unit = _div_result_unit(other_unit, self.unit)
-        if result_unit is None:
-            return FinancialValue.none(self.policy)
+        # Handle both new and legacy unit systems
+        if isinstance(self.unit, NewUnit):
+            # New unit system: raw values have None unit, preserve left operand's unit (conservative)
+            other_unit = self._new_unit_of(other, None)
+            result_unit = other_unit  # For division, preserve left operand's unit
+        elif self.unit is None:
+            # New unit system with None unit: raw values have None unit
+            other_unit = self._new_unit_of(other, None)
+            result_unit = other_unit  # Preserve left operand's unit (None)
+        else:
+            # Legacy unit system
+            other_unit = self._unit_of(other, Dimensionless)
+            result_unit = _div_result_unit(other_unit, self.unit)
+            if result_unit is None:
+                return FinancialValue.none(self.policy)
 
         policy = (
             (other.policy if isinstance(other, FinancialValue) else self.policy)
@@ -1177,13 +1388,48 @@ class FinancialValue(Generic[U]):
 
                 raise CalculationError("Binary operation encountered None")
             return _invalid_op("None operand")
-        left_u, right_u = (
-            self.unit,
-            (other.unit if isinstance(other, FinancialValue) else raw_default_unit),
-        )
-        result_u = unit_rule(left_u, right_u)
-        if result_u is None:
-            return _invalid_op("incompatible units")
+
+        # Handle both new and legacy unit systems
+        if isinstance(self.unit, NewUnit):
+            # New unit system - implement unit safety checks for add/subtract
+            other_unit = self._new_unit_of(other, None)
+
+            if op_name in ("+", "-"):
+                # Addition and subtraction require unit compatibility
+                if self.unit is not None and other_unit is not None:
+                    if self.unit != other_unit:
+                        raise ValueError(
+                            f"Incompatible units for {op_name}: {self.unit} {op_name} {other_unit}"
+                        )
+                    result_u = self.unit  # Same unit
+                elif self.unit is not None:
+                    result_u = self.unit  # Preserve non-None unit
+                elif other_unit is not None:
+                    result_u = other_unit  # Preserve non-None unit
+                else:
+                    result_u = None  # Both None
+            else:
+                # Multiplication and division: preserve left operand's unit (conservative)
+                result_u = self.unit
+        elif self.unit is None:
+            # New unit system with None unit
+            other_unit = self._new_unit_of(other, None)
+
+            if op_name in ("+", "-"):
+                # For add/subtract with None unit, preserve the other operand's unit if it exists
+                result_u = other_unit
+            else:
+                # For mul/div, preserve None (conservative)
+                result_u = None
+        else:
+            # Legacy unit system
+            left_u, right_u = (
+                self.unit,
+                (other.unit if isinstance(other, FinancialValue) else raw_default_unit),
+            )
+            result_u = unit_rule(left_u, right_u)
+            if result_u is None:
+                return _invalid_op("incompatible units")
         policy = _resolve_policy_for_op(self, other)
 
         # Preserve percentage flag if both operands are percentages

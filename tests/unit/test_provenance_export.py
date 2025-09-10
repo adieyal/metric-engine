@@ -15,17 +15,21 @@ class TestProvenanceExport:
 
     def test_get_provenance_graph_simple(self):
         """Test get_provenance_graph with a simple FinancialValue."""
-        fv = FinancialValue(100)
+        from metricengine.provenance_config import provenance_config
 
-        graph = get_provenance_graph(fv)
+        # Ensure provenance is enabled for this test
+        with provenance_config(enabled=True, track_literals=True):
+            fv = FinancialValue(100)
 
-        # Should contain one provenance record
-        assert len(graph) == 1
+            graph = get_provenance_graph(fv)
 
-        # Should contain the root provenance
-        root_prov = fv.get_provenance()
-        assert root_prov.id in graph
-        assert graph[root_prov.id] == root_prov
+            # Should contain one provenance record
+            assert len(graph) == 1
+
+            # Should contain the root provenance
+            root_prov = fv.get_provenance()
+            assert root_prov.id in graph
+            assert graph[root_prov.id] == root_prov
 
     def test_get_provenance_graph_no_provenance(self):
         """Test get_provenance_graph with FinancialValue without provenance."""

@@ -133,10 +133,10 @@ class TestProvenanceAccessMethods:
         """Test get_provenance_metadata for basic operations."""
         a = FinancialValue(10)
 
-        # Literal should have empty metadata
+        # Literal should have unit metadata
         meta = a.get_provenance_metadata()
         assert isinstance(meta, dict)
-        assert len(meta) == 0
+        assert meta.get("unit") == "Dimensionless"
 
     def test_get_provenance_metadata_with_span(self):
         """Test get_provenance_metadata with calculation spans."""
