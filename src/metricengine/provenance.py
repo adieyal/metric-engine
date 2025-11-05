@@ -305,9 +305,18 @@ except ImportError:
 
 
 # Context variables for span tracking
-_current_span_stack: ContextVar[list[dict[str, Any]]] = ContextVar(
-    "_current_span_stack", default=[]
+_current_span_stack: ContextVar[list[dict[str, Any]] | None] = ContextVar(
+    "_current_span_stack", default=None
 )
+
+
+def _get_span_stack() -> list[dict[str, Any]]:
+    """Get the current span stack, creating if needed."""
+    stack = _current_span_stack.get()
+    if stack is None:
+        stack = []
+        _current_span_stack.set(stack)
+    return stack
 
 
 @dataclass(frozen=True)

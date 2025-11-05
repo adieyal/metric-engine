@@ -2,7 +2,7 @@
 from collections.abc import Sequence
 from decimal import Decimal
 from types import NoneType
-from typing import Any, Literal, Protocol, SupportsFloat, TypeVar, Union, overload
+from typing import Any, Literal, Protocol, SupportsFloat, TypeVar, overload
 
 from metricengine import Dimensionless, Money, Percent, Ratio, Unit
 from metricengine import FinancialValue as FV
@@ -103,7 +103,7 @@ class Calc_average_value(Protocol):
     def __call__(
         self,
         values: Sequence[
-            Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
         ],
     ) -> FV[U]: ...
 
@@ -681,12 +681,10 @@ class Calc_weighted_average(Protocol):
     def __call__(
         self,
         values: Sequence[
-            Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
         ],
         weights: Sequence[
-            Union[
-                int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[Dimensionless]
-            ]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[Dimensionless]
         ],
     ) -> FV[U]: ...
 
@@ -867,7 +865,7 @@ def average_inventory(
 ) -> FV[Money]: ...
 def average_value(
     values: Sequence[
-        Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+        int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
     ],
 ) -> FV[U]: ...
 def beverage_cost_percentage(beverage_cost_ratio: FV[Ratio]) -> FV[Percent]: ...
@@ -984,9 +982,9 @@ def variance_ratio_from_components(
 ) -> FV[Ratio]: ...
 def weighted_average(
     values: Sequence[
-        Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+        int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
     ],
     weights: Sequence[
-        Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[Dimensionless]]
+        int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[Dimensionless]
     ],
 ) -> FV[U]: ...

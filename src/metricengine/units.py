@@ -471,8 +471,8 @@ class ConversionPolicy:
 
 
 # Context variable for scoped conversion policy
-_current_conversion_policy: ContextVar[ConversionPolicy] = ContextVar(
-    "_current_conversion_policy", default=ConversionPolicy()
+_current_conversion_policy: ContextVar[ConversionPolicy | None] = ContextVar(
+    "_current_conversion_policy", default=None
 )
 
 
@@ -505,7 +505,8 @@ def get_current_conversion_policy() -> ConversionPolicy:
     Returns:
         Current ConversionPolicy in effect
     """
-    return _current_conversion_policy.get()
+    policy = _current_conversion_policy.get()
+    return policy if policy is not None else ConversionPolicy()
 
 
 def convert_decimal(
