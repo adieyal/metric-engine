@@ -757,7 +757,7 @@ class FinancialValue(Generic[U]):
             parts.append(f"unit={unit_repr}")
 
         # Compare _is_percentage against False and include only if different
-        if self._is_percentage is False:
+        if self._is_percentage is not False:
             parts.append(f"is_percentage={self._is_percentage}")
 
         return f"FinancialValue({', '.join(parts)})"

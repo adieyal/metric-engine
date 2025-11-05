@@ -18,20 +18,8 @@ from metricengine.provenance_config import (
 )
 
 
-@pytest.fixture(autouse=True)
-def reset_provenance_config():
-    """Fixture to ensure each test starts with a clean provenance configuration."""
-    # Save the original configuration
-    original_config = get_config()
-
-    # Reset to default configuration before each test
-    default_config = ProvenanceConfig()
-    set_global_config(default_config)
-
-    yield
-
-    # Restore the original configuration after each test
-    set_global_config(original_config)
+# Note: reset_provenance_config fixture is now in conftest.py
+# and is automatically used for all tests
 
 
 class TestProvenanceConfig:

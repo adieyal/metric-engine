@@ -92,7 +92,7 @@ metricengine = ["py.typed", "calculations/*.pyi", "typed_api.pyi", "engine.pyi"]
 sample = "metricengine.calculations"
 
 [tool.pytest.ini_options]
-addopts = "-q --cov=src/metricengine --cov-report=term-missing:skip-covered"
+addopts = "-q"
 testpaths = ["tests"]
 pythonpath = ["src"]
 
@@ -111,6 +111,8 @@ exclude_lines = [
 [tool.ruff]
 target-version = "py39"
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -126,9 +128,9 @@ ignore = [
     "C901",  # too complex
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "tests/**/*.py" = ["B011"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["metricengine"]

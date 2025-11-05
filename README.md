@@ -1,5 +1,12 @@
 # Metric Engine
 
+[![CI](https://github.com/adieyal/metric-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/adieyal/metric-engine/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/adieyal/metric-engine/branch/main/graph/badge.svg)](https://codecov.io/gh/adieyal/metric-engine)
+[![PyPI version](https://badge.fury.io/py/metric-engine.svg)](https://badge.fury.io/py/metric-engine)
+[![Python Versions](https://img.shields.io/pypi/pyversions/metric-engine.svg)](https://pypi.org/project/metric-engine/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 **Robust Python library for precision calculations with strong typing, policy-driven behavior, and bulletproof error handling.**
 
 Metric Engine provides a comprehensive foundation for building applications that require type-safe calculations, decimal precision, and graceful handling of missing data. Perfect for financial applications, business metrics, scientific calculations, or any domain where precision and type safety matter.
