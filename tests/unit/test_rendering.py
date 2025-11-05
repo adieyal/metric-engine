@@ -1,4 +1,5 @@
 """Tests for the custom rendering system."""
+
 from __future__ import annotations
 
 import pytest
@@ -22,6 +23,7 @@ class TestRendererProtocol:
 
     def test_register_and_get_renderer(self):
         """Test registering and retrieving renderers."""
+
         class CustomRenderer:
             def render(self, fv, *, context=None):
                 return f"Custom: {fv.as_str()}"
@@ -34,15 +36,20 @@ class TestRendererProtocol:
 
     def test_get_nonexistent_renderer_raises_keyerror(self):
         """Test that getting a non-existent renderer raises KeyError."""
-        with pytest.raises(KeyError, match="No renderer registered with name 'nonexistent'"):
+        with pytest.raises(
+            KeyError, match="No renderer registered with name 'nonexistent'"
+        ):
             get_renderer("nonexistent")
 
     def test_register_invalid_renderer_raises_typeerror(self):
         """Test that registering an invalid renderer raises TypeError."""
+
         class InvalidRenderer:
             pass  # Missing render method
 
-        with pytest.raises(TypeError, match="Renderer must implement the Renderer protocol"):
+        with pytest.raises(
+            TypeError, match="Renderer must implement the Renderer protocol"
+        ):
             register_renderer("invalid", InvalidRenderer())
 
     def test_list_renderers(self):
@@ -96,7 +103,7 @@ class TestHtmlRenderer:
         result = renderer.render(amount)
 
         assert '<span class="fv positive unit-money"' in result
-        assert '1,234.56</span>' in result
+        assert "1,234.56</span>" in result
 
     def test_html_renderer_negative_amount(self):
         """Test HTML rendering of negative amounts."""
@@ -106,7 +113,7 @@ class TestHtmlRenderer:
         result = renderer.render(amount)
 
         assert '<span class="fv negative unit-money"' in result
-        assert '-1,234.56</span>' in result or '(1,234.56)</span>' in result
+        assert "-1,234.56</span>" in result or "(1,234.56)</span>" in result
 
     def test_html_renderer_none_value(self):
         """Test HTML rendering of None values."""
@@ -116,7 +123,7 @@ class TestHtmlRenderer:
         result = renderer.render(none_amount)
 
         assert '<span class="fv none unit-money"' in result
-        assert '—</span>' in result  # Default none_text
+        assert "—</span>" in result  # Default none_text
 
     def test_html_renderer_percentage(self):
         """Test HTML rendering of percentages."""
@@ -127,7 +134,7 @@ class TestHtmlRenderer:
 
         assert '<span class="fv positive unit-percent percentage"' in result
         # The percent factory converts 15.5% to 0.155 ratio, which formats as 0.16%
-        assert '%</span>' in result
+        assert "%</span>" in result
 
     def test_html_renderer_with_custom_classes(self):
         """Test HTML rendering with custom CSS classes."""
@@ -143,7 +150,9 @@ class TestHtmlRenderer:
         renderer = HtmlRenderer()
         amount = money(1234.56)
 
-        result = renderer.render(amount, context={"css_classes": ["highlight", "important"]})
+        result = renderer.render(
+            amount, context={"css_classes": ["highlight", "important"]}
+        )
 
         assert 'class="fv positive unit-money highlight important"' in result
 
@@ -152,9 +161,9 @@ class TestHtmlRenderer:
         renderer = HtmlRenderer()
         amount = money(1234.56)
 
-        result = renderer.render(amount, context={
-            "attributes": {"data-test": "value", "id": "amount-1"}
-        })
+        result = renderer.render(
+            amount, context={"attributes": {"data-test": "value", "id": "amount-1"}}
+        )
 
         assert 'data-test="value"' in result
         assert 'id="amount-1"' in result
@@ -167,7 +176,7 @@ class TestHtmlRenderer:
         result = renderer.render(amount, context={"tag": "div"})
 
         assert result.startswith('<div class="fv positive unit-money"')
-        assert result.endswith('</div>')
+        assert result.endswith("</div>")
 
     def test_html_renderer_with_currency_data_attribute(self):
         """Test HTML rendering includes currency data attribute."""
@@ -191,7 +200,7 @@ class TestHtmlRenderer:
 
         assert '<span class="fv positive unit-money"' in result
         # With display policy, should show currency symbol
-        assert '$' in result or 'USD' in result
+        assert "$" in result or "USD" in result
 
 
 class TestMarkdownRenderer:
@@ -254,11 +263,9 @@ class TestMarkdownRenderer:
         renderer = MarkdownRenderer()
         rate = percent(-15.5, input="percent")
 
-        result = renderer.render(rate, context={
-            "bold": True,
-            "italic": True,
-            "code": True
-        })
+        result = renderer.render(
+            rate, context={"bold": True, "italic": True, "code": True}
+        )
 
         # Should have all formatting: `**_text_**`
         assert "`" in result
@@ -282,7 +289,7 @@ class TestFinancialValueRenderMethod:
 
         result = amount.render("html")
         assert '<span class="fv positive unit-money"' in result
-        assert '1,234.56</span>' in result
+        assert "1,234.56</span>" in result
 
     def test_fv_render_markdown(self):
         """Test FV.render() with Markdown renderer."""
@@ -346,13 +353,16 @@ class TestCustomRenderers:
 
         data = json.loads(result)
         assert data["value"] == "1234.56"
-        assert data["formatted"] == "1,234.56"  # No currency symbol without display policy
+        assert (
+            data["formatted"] == "1,234.56"
+        )  # No currency symbol without display policy
         assert data["unit"] == "Money"
         assert data["is_negative"] is False
         assert data["is_percentage"] is False
 
     def test_custom_csv_renderer(self):
         """Test a custom CSV-style renderer."""
+
         class CsvRenderer:
             def render(self, fv, *, context=None):
                 context = context or {}
@@ -379,11 +389,15 @@ class TestCustomRenderers:
         amount = money(1234.56)
         result = amount.render("csv")
 
-        assert result == "1234.56,1,234.56,Money,false,false"  # No currency symbol without display policy
+        assert (
+            result == "1234.56,1,234.56,Money,false,false"
+        )  # No currency symbol without display policy
 
         # Test with custom separator
         result_pipe = amount.render("csv", separator="|")
-        assert result_pipe == "1234.56|1,234.56|Money|false|false"  # No currency symbol without display policy
+        assert (
+            result_pipe == "1234.56|1,234.56|Money|false|false"
+        )  # No currency symbol without display policy
 
 
 class TestRenderingIntegration:

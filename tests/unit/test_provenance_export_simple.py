@@ -1,4 +1,5 @@
 """Simple integration tests for provenance export functions."""
+
 import json
 from decimal import Decimal
 

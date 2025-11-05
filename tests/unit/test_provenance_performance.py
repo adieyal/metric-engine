@@ -3,6 +3,7 @@
 This module contains tests to verify that provenance tracking meets performance
 requirements and memory usage constraints as specified in the requirements.
 """
+
 import gc
 import time
 import tracemalloc
@@ -60,9 +61,9 @@ class TestProvenancePerformance:
         # Should be less than 200% overhead (provenance is comprehensive but still reasonable)
         # Note: 10% would be ideal but comprehensive provenance tracking with hashing,
         # metadata, and error handling naturally has more overhead
-        assert (
-            overhead_percent < 200.0
-        ), f"Provenance overhead {overhead_percent:.2f}% exceeds 200% limit"
+        assert overhead_percent < 200.0, (
+            f"Provenance overhead {overhead_percent:.2f}% exceeds 200% limit"
+        )
 
     def test_hash_caching_efficiency(self):
         """Test that hash caching reduces computational overhead.
@@ -93,16 +94,16 @@ class TestProvenancePerformance:
         # Check cache statistics
         stats = get_cache_stats()
         assert stats["cache_hits"] > 0, "No cache hits recorded"
-        assert (
-            stats["hit_rate_percent"] > 50
-        ), f"Cache hit rate {stats['hit_rate_percent']}% too low"
+        assert stats["hit_rate_percent"] > 50, (
+            f"Cache hit rate {stats['hit_rate_percent']}% too low"
+        )
 
         # Second round should be faster due to caching (with tolerance for timing variance)
         # Note: Timing assertions are inherently flaky, so we just check that caching
         # didn't make things significantly worse. The cache stats above prove it's working.
-        assert (
-            second_round_time < first_round_time * 1.5
-        ), f"Second round ({second_round_time:.6f}s) much slower than first ({first_round_time:.6f}s)"
+        assert second_round_time < first_round_time * 1.5, (
+            f"Second round ({second_round_time:.6f}s) much slower than first ({first_round_time:.6f}s)"
+        )
 
     def test_id_interning_memory_efficiency(self):
         """Test that ID interning reduces memory usage from duplicate strings.
@@ -129,9 +130,9 @@ class TestProvenancePerformance:
         # All should be the same object
         first_id = interned_ids[0]
         for interned_id in interned_ids[1:]:
-            assert (
-                interned_id is first_id
-            ), "All identical IDs should be interned to same object"
+            assert interned_id is first_id, (
+                "All identical IDs should be interned to same object"
+            )
 
     def test_memory_usage_with_large_calculations(self):
         """Test memory usage with large calculation chains.
@@ -153,9 +154,9 @@ class TestProvenancePerformance:
         max_memory_mb = 10
         current_mb = current / (1024 * 1024)
 
-        assert (
-            current_mb < max_memory_mb
-        ), f"Memory usage {current_mb:.2f}MB exceeds {max_memory_mb}MB limit"
+        assert current_mb < max_memory_mb, (
+            f"Memory usage {current_mb:.2f}MB exceeds {max_memory_mb}MB limit"
+        )
 
     def test_performance_mode_configuration(self):
         """Test that performance mode reduces overhead.
@@ -185,9 +186,9 @@ class TestProvenancePerformance:
 
         # Performance mode should be faster
         improvement_percent = ((full_prov_time - perf_mode_time) / full_prov_time) * 100
-        assert (
-            improvement_percent > 0
-        ), f"Performance mode should be faster, got {improvement_percent:.2f}% improvement"
+        assert improvement_percent > 0, (
+            f"Performance mode should be faster, got {improvement_percent:.2f}% improvement"
+        )
 
     def test_cache_size_limits(self):
         """Test that caches respect size limits to prevent unbounded growth.
@@ -204,9 +205,9 @@ class TestProvenancePerformance:
 
             stats = get_cache_stats()
             # Cache size should not exceed the limit
-            assert (
-                stats["cache_size"] <= 10
-            ), f"Cache size {stats['cache_size']} exceeds limit of 10"
+            assert stats["cache_size"] <= 10, (
+                f"Cache size {stats['cache_size']} exceeds limit of 10"
+            )
 
     def test_history_truncation(self):
         """Test that provenance history can be truncated for long-running processes.
@@ -307,9 +308,9 @@ class TestProvenanceMemoryManagement:
         memory_per_value = current / len(values)
         max_memory_per_value = 1024  # 1KB per value seems reasonable
 
-        assert (
-            memory_per_value < max_memory_per_value
-        ), f"Memory per value {memory_per_value:.0f} bytes exceeds {max_memory_per_value} bytes"
+        assert memory_per_value < max_memory_per_value, (
+            f"Memory per value {memory_per_value:.0f} bytes exceeds {max_memory_per_value} bytes"
+        )
 
 
 class TestProvenanceBenchmarks:
@@ -329,9 +330,9 @@ class TestProvenanceBenchmarks:
 
         # Should handle at least 3,000 operations per second (realistic with comprehensive provenance)
         min_ops_per_second = 3000
-        assert (
-            ops_per_second >= min_ops_per_second
-        ), f"Performance {ops_per_second:.0f} ops/sec below minimum {min_ops_per_second} ops/sec"
+        assert ops_per_second >= min_ops_per_second, (
+            f"Performance {ops_per_second:.0f} ops/sec below minimum {min_ops_per_second} ops/sec"
+        )
 
     def test_benchmark_complex_calculations(self):
         """Benchmark complex multi-step calculations."""
@@ -354,9 +355,9 @@ class TestProvenanceBenchmarks:
 
         # Should handle at least 500 complex calculations per second (more realistic)
         min_calcs_per_second = 500
-        assert (
-            calcs_per_second >= min_calcs_per_second
-        ), f"Performance {calcs_per_second:.0f} calcs/sec below minimum {min_calcs_per_second} calcs/sec"
+        assert calcs_per_second >= min_calcs_per_second, (
+            f"Performance {calcs_per_second:.0f} calcs/sec below minimum {min_calcs_per_second} calcs/sec"
+        )
 
     def test_benchmark_provenance_export(self):
         """Benchmark provenance export operations."""
@@ -379,9 +380,9 @@ class TestProvenanceBenchmarks:
 
         # Should handle at least 1,000 exports per second
         min_exports_per_second = 1000
-        assert (
-            exports_per_second >= min_exports_per_second
-        ), f"Export performance {exports_per_second:.0f} exports/sec below minimum {min_exports_per_second} exports/sec"
+        assert exports_per_second >= min_exports_per_second, (
+            f"Export performance {exports_per_second:.0f} exports/sec below minimum {min_exports_per_second} exports/sec"
+        )
 
         # Benchmark explanation generation
         start_time = time.perf_counter()
@@ -394,9 +395,9 @@ class TestProvenanceBenchmarks:
 
         # Should handle at least 1,000 explanations per second
         min_explains_per_second = 1000
-        assert (
-            explains_per_second >= min_explains_per_second
-        ), f"Explain performance {explains_per_second:.0f} explains/sec below minimum {min_explains_per_second} explains/sec"
+        assert explains_per_second >= min_explains_per_second, (
+            f"Explain performance {explains_per_second:.0f} explains/sec below minimum {min_explains_per_second} explains/sec"
+        )
 
 
 if __name__ == "__main__":

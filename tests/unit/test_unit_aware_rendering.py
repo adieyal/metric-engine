@@ -1,4 +1,5 @@
 """Tests for unit-aware rendering system."""
+
 from __future__ import annotations
 
 from metricengine.rendering import (

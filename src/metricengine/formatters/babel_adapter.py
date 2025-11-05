@@ -1,4 +1,5 @@
 """Babel-based formatter for locale-aware formatting."""
+
 from __future__ import annotations
 
 from decimal import Decimal

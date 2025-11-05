@@ -1,4 +1,5 @@
 """Integration tests for Babel formatting with FinancialValue."""
+
 from __future__ import annotations
 
 from decimal import Decimal
@@ -28,9 +29,9 @@ class TestFinancialValueBabelIntegration:
         result = value.as_str()
         # Should use new formatter system (Babel or builtin)
         assert "USD" in result or "US$" in result  # May show as symbol
-        assert "1234" in result.replace("\xa0", "").replace(
-            " ", ""
-        ).replace(",", "")  # Remove non-breaking spaces and grouping commas
+        assert "1234" in result.replace("\xa0", "").replace(" ", "").replace(
+            ",", ""
+        )  # Remove non-breaking spaces and grouping commas
 
     def test_financial_value_money_with_unit_currency(self):
         """Test FV with Money unit that has currency code."""

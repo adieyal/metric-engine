@@ -1,4 +1,5 @@
 """Tests for provenance error handling and graceful degradation."""
+
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
@@ -731,7 +732,6 @@ class TestEnhancedErrorHandling:
         # The patches in threads may not clean up properly, so force cleanup
         import hashlib
         import importlib
-
 
         # Reimport to ensure clean state
         importlib.reload(hashlib)

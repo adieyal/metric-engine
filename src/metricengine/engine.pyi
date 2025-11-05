@@ -1231,7 +1231,14 @@ class Engine:
             int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
         ],
         weights: Sequence[
-            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[Dimensionless]
+            int
+            | float
+            | str
+            | Decimal
+            | SupportsFloat
+            | NoneType
+            | FV
+            | FV[Dimensionless]
         ],
     ) -> FV[U]:
         """\

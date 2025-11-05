@@ -108,9 +108,9 @@ class TestMetricEngineSmoke:
 
         for calc_name, ctx, expected in test_cases:
             result = engine.calculate(calc_name, ctx)
-            assert result.as_decimal() == Decimal(
-                expected
-            ), f"{calc_name}: expected {expected}, got {result.as_decimal()}"
+            assert result.as_decimal() == Decimal(expected), (
+                f"{calc_name}: expected {expected}, got {result.as_decimal()}"
+            )
 
     def test_convenience_imports(self):
         """Test that convenience imports work correctly."""
