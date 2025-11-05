@@ -2269,7 +2269,7 @@ class TestConversionLogging:
         def usd_to_gbp(value: Decimal, ctx: ConversionContext) -> Decimal:
             return value * Decimal("0.79")
 
-        result = convert_decimal(Decimal("100"), usd, gbp)
+        _ = convert_decimal(Decimal("100"), usd, gbp)
 
         # Check that debug log was created
         assert (
@@ -2298,7 +2298,7 @@ class TestConversionLogging:
         def eur_to_gbp(value: Decimal, ctx: ConversionContext) -> Decimal:
             return value * Decimal("0.93")
 
-        result = convert_decimal(Decimal("100"), usd, gbp)
+        _ = convert_decimal(Decimal("100"), usd, gbp)
 
         # Check that path finding and step logs were created
         assert (
@@ -2333,7 +2333,7 @@ class TestConversionLogging:
 
         permissive_policy = ConversionPolicy(strict=False)
         with use_conversions(permissive_policy):
-            result = convert_decimal(Decimal("100"), usd, gbp)
+            _ = convert_decimal(Decimal("100"), usd, gbp)
 
         # Check that error was logged
         assert (
@@ -2359,7 +2359,7 @@ class TestConversionLogging:
 
         permissive_policy = ConversionPolicy(strict=False)
         with use_conversions(permissive_policy):
-            result = convert_decimal(Decimal("100"), usd, gbp)
+            _ = convert_decimal(Decimal("100"), usd, gbp)
 
         # Check that warning and info messages were logged
         assert "No conversion path found from Money[USD] to Money[GBP]" in caplog.text

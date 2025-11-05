@@ -17,7 +17,6 @@ from metricengine.provenance_config import (
     update_global_config,
 )
 
-
 # Note: reset_provenance_config fixture is now in conftest.py
 # and is automatically used for all tests
 
@@ -727,3 +726,16 @@ class TestEnhancedErrorHandling:
         assert len(successful_operations) > 0
         # Should not have uncaught exceptions
         assert len(errors_caught) == 0
+
+        # IMPORTANT: Clear any lingering state from threading + mocking
+        # The patches in threads may not clean up properly, so force cleanup
+        import hashlib
+        import importlib
+
+
+        # Reimport to ensure clean state
+        importlib.reload(hashlib)
+        # Clear all caches to remove any error-tainted state
+        from metricengine.provenance import clear_caches
+
+        clear_caches()

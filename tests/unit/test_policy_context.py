@@ -359,7 +359,6 @@ class TestAdditionalEdgeCases:
         policy1 = Policy(decimal_places=1)
         policy2 = Policy(decimal_places=2)
         resolution1 = PolicyResolution.CONTEXT
-        resolution2 = PolicyResolution.STRICT_MATCH
 
         with use_policy(policy1):
             with use_policy_resolution(resolution1):

@@ -204,7 +204,7 @@ class TestUnitProvenanceTracking:
 
         # Should preserve original provenance for same-unit conversions
         if original.has_provenance() and result.has_provenance():
-            orig_prov = original.get_provenance()
+            original.get_provenance()
             result_prov = result.get_provenance()
 
             # For same-unit conversions, provenance should be preserved
