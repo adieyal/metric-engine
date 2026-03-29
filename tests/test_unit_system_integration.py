@@ -24,7 +24,7 @@ from metricengine import Engine
 from metricengine import FinancialValue as FV
 from metricengine.policy import Policy
 from metricengine.provenance import explain, to_trace_json
-from metricengine.registry import calc, clear_registry
+from metricengine.registry import calc, clear_registry, default_registry
 from metricengine.units import (
     ConversionContext,
     ConversionPolicy,
@@ -260,7 +260,7 @@ class TestMultiCurrencyFinancialCalculations:
         eur = MoneyUnit("EUR")
         gbp = MoneyUnit("GBP")
 
-        engine = Engine()
+        engine = Engine(registry=default_registry)
 
         # Revenue in different currencies
         inputs = {
@@ -287,7 +287,7 @@ class TestMultiCurrencyFinancialCalculations:
         usd = MoneyUnit("USD")
         eur = MoneyUnit("EUR")
 
-        engine = Engine()
+        engine = Engine(registry=default_registry)
 
         # Profit in EUR, Revenue in USD - should handle conversion
         profit_eur = FV(Decimal("2000.00"), unit=eur)

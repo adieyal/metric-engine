@@ -18,6 +18,7 @@ from ..value import FV
 from .rules import skip_if_negative_sales
 
 pricing = Collection("pricing")
+__collections__ = (pricing,)
 
 # ── small local helpers ──────────────────────────────────────────────────────
 

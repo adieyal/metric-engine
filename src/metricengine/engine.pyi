@@ -6,12 +6,19 @@ from typing import Literal, SupportsFloat, TypeVar, overload
 
 from metricengine import Dimensionless, Money, Percent, Policy, Ratio, Unit
 from metricengine import FinancialValue as FV
+from metricengine.registry import Registry
 from metricengine.utils import SupportsDecimal
 
 U = TypeVar("U", bound=Unit)
 
 class Engine:
-    def __init__(self, default_policy: Policy | None = None) -> None: ...
+    registry: Registry
+
+    def __init__(
+        self,
+        default_policy: Policy | None = None,
+        registry: Registry | None = None,
+    ) -> None: ...
     @overload
     def calculate(
         self,

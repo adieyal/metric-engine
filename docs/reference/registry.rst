@@ -16,13 +16,23 @@ Registry Class
 Registry Functions
 ------------------
 
-.. autofunction:: register_calculation
+.. autofunction:: calc
 
-.. autofunction:: register_unit
+.. autofunction:: get
 
-.. autofunction:: register_reducer
+.. autofunction:: deps
 
-.. autofunction:: get_registry
+.. autofunction:: list_calculations
+
+.. autofunction:: clear_registry
+
+.. autofunction:: is_registered
+
+.. autofunction:: unregister
+
+.. autofunction:: dependency_graph
+
+.. autofunction:: detect_cycles
 
 Global Registry
 ---------------

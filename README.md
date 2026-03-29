@@ -115,6 +115,7 @@ print(f"Operating Profit: {operating_profit}")  # $160,000.00
 ```
 
 Built-in calculations load automatically by default when you create an `Engine()`.
+Each engine gets its own registry unless you pass one explicitly.
 If you want to start with an empty registry and register calculations yourself,
 disable autoload once at the package level:
 
@@ -133,11 +134,13 @@ while autoload is disabled.
 ### Custom Calculations
 
 ```python
-from metricengine import calc, FV
+from metricengine import Engine, FV
 from metricengine.units import Money
 from metricengine.factories import money
 
-@calc("monthly_revenue", depends_on=("annual_revenue",))
+engine = Engine()
+
+@engine.registry.calc("monthly_revenue", depends_on=("annual_revenue",))
 def monthly_revenue(annual_revenue: FV[Money]) -> FV[Money]:
     """Calculate monthly revenue from annual."""
     if annual_revenue.is_none():
@@ -149,6 +152,10 @@ context = {"annual_revenue": money(1200000)}
 monthly = engine.calculate("monthly_revenue", context)
 print(f"Monthly Revenue: {monthly}")  # 100,000.00
 ```
+
+The module-level helpers such as `metricengine.calc()` still register against
+the shared `default_registry`. Use `engine.registry.calc(...)` when you want a
+calculation to belong only to one engine instance.
 
 ### Complete Calculation Traceability
 

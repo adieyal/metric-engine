@@ -4,8 +4,19 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from .loading import should_autoload_default_calculations
+from .registry import default_registry, is_registered
 from .registry import deps as reg_deps
-from .registry import is_registered
+
+
+def _ensure_default_registry_loaded() -> None:
+    """Load built-in calculations into the default registry when autoload is enabled."""
+    if not should_autoload_default_calculations():
+        return
+
+    from .calculations import load_all
+
+    load_all(default_registry)
 
 
 def inputs_needed_for(targets: Iterable[str]) -> set[str]:
@@ -15,6 +26,8 @@ def inputs_needed_for(targets: Iterable[str]) -> set[str]:
     A "base input" is any dependency name that is not a registered calculation.
     Registered calculations that have no dependencies are *not* counted as inputs.
     """
+    _ensure_default_registry_loaded()
+
     todo: set[str] = set(targets)
     needed: set[str] = set()
     visited: set[str] = set()
@@ -50,6 +63,8 @@ def _expand_graph(
         base_inputs: names that are not registered (leaf inputs)
         edges: mapping registered name -> its dependency set (names)
     """
+    _ensure_default_registry_loaded()
+
     stack: set[str] = set(targets)
     registered_nodes: set[str] = set()
     base_inputs: set[str] = set()

@@ -21,6 +21,7 @@ from ..value import FV
 U = TypeVar("U", bound=Unit)
 
 growth = Collection("growth")
+__collections__ = (growth,)
 
 
 @growth.calc("simple_growth_rate", depends_on=("initial_value", "final_value"))

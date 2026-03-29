@@ -6,7 +6,7 @@ import pytest
 
 from metricengine.engine import Engine
 from metricengine.policy import Policy
-from metricengine.registry import calc
+from metricengine.registry import calc, default_registry
 from metricengine.value import FinancialValue
 
 
@@ -54,7 +54,7 @@ class TestEngineProvenance:
         def margin_calc(revenue, cost):
             return (revenue - cost) / revenue
 
-        self.engine = Engine()
+        self.engine = Engine(registry=default_registry)
 
     def test_simple_calculation_provenance(self):
         """Test that simple calculations generate proper provenance."""

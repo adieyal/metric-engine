@@ -3,7 +3,7 @@ from typing import Any, Callable
 
 from .exceptions import CalculationError
 from .loading import should_autoload_default_calculations
-from .registry import deps
+from .registry import default_registry, deps
 from .registry import get as _get
 from .registry import list_calculations as _list
 
@@ -27,7 +27,7 @@ def _ensure_calculations_loaded():
         calculations_module = importlib.import_module(
             ".calculations", package=__package__
         )
-        calculations_module.load_all()
+        calculations_module.load_all(default_registry)
     except Exception:
         # Be resilient if calculation modules are unavailable
         pass

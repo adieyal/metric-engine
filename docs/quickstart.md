@@ -131,10 +131,12 @@ also stops auto-loading the built-in collections.
 Register your own business logic:
 
 ```python
-from metricengine import calc
+from metricengine import Engine, FV
 from metricengine.units import Money, Ratio
 
-@calc("monthly_revenue", depends_on=("annual_revenue",))
+engine = Engine()
+
+@engine.registry.calc("monthly_revenue", depends_on=("annual_revenue",))
 def monthly_revenue(annual_revenue: FV[Money]) -> FV[Money]:
     """Calculate monthly revenue from annual."""
     if annual_revenue.is_none():
@@ -146,6 +148,11 @@ context = {"annual_revenue": money(1200000)}
 monthly = engine.calculate("monthly_revenue", context)
 print(f"Monthly Revenue: {monthly}")  # $100,000.00
 ```
+
+`Engine()` creates a private registry by default. If you want to share
+calculations across multiple engines, create a `Registry` and pass it to each
+engine explicitly. The module-level decorator `metricengine.calc(...)` still
+registers against the shared `default_registry`.
 
 ## Policy-Driven Formatting
 

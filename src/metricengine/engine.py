@@ -10,7 +10,7 @@ from .exceptions import CalculationError, CircularDependencyError, MissingInputE
 from .loading import should_autoload_default_calculations
 from .policy import DEFAULT_POLICY, Policy
 from .policy_context import get_policy, use_policy
-from .registry import deps, get, is_registered
+from .registry import Registry
 from .utils import SupportsDecimal, to_decimal
 from .value import FinancialValue
 
@@ -25,22 +25,29 @@ class Engine:
     and executes calculations in the correct order.
     """
 
-    def __init__(self, default_policy: Policy | None = None):
+    def __init__(
+        self,
+        default_policy: Policy | None = None,
+        registry: Registry | None = None,
+    ):
         """
         Initialize the engine with an optional default policy.
 
         Args:
             default_policy: Default policy for calculations. Uses DEFAULT_POLICY if None.
+            registry: Calculation registry to use. When omitted, the engine creates
+                a private registry for this instance.
         """
         self.default_policy: Policy = default_policy or DEFAULT_POLICY
         self.metric_policy: dict[str, Policy] = {}  # optional per-metric override
+        self.registry = registry or Registry()
 
         if should_autoload_default_calculations():
             # Ensure calculations are registered on engine creation
             try:
                 from .calculations import load_all
 
-                load_all()
+                load_all(self.registry)
             except Exception as e:
                 # Don't silently ignore exceptions during development
                 import warnings
@@ -416,11 +423,11 @@ class Engine:
                     ) from exc
 
             # Check if calculation is registered
-            if not is_registered(name):
+            if not self.registry.is_registered(name):
                 return False
 
             # Resolve all dependencies first
-            calculation_deps = deps(name)
+            calculation_deps = self.registry.deps(name)
             all_resolved = True
 
             for dep in calculation_deps:
@@ -434,7 +441,7 @@ class Engine:
             # Execute the calculation
             try:
                 # before calling calc_func in resolve(...)
-                calc_func = get(name)
+                calc_func = self.registry.get(name)
                 dep_values = {d: cache[d] for d in calculation_deps}
 
                 # choose policy per metric
@@ -496,12 +503,12 @@ class Engine:
                     return {name}
 
                 # If not registered, it's a missing input
-                if not is_registered(name):
+                if not self.registry.is_registered(name):
                     return {name}
 
                 # For registered calculations, check dependencies
                 missing_deps = set()
-                for dep in deps(name):
+                for dep in self.registry.deps(name):
                     missing_deps.update(find_missing(dep, visited))
 
                 return missing_deps
@@ -539,7 +546,9 @@ class Engine:
             if key in cache and key not in failed_targets:
                 cached_result = cache[key]
                 # Add calculation provenance if this is a registered calculation
-                if is_registered(key) and isinstance(cached_result, FinancialValue):
+                if self.registry.is_registered(key) and isinstance(
+                    cached_result, FinancialValue
+                ):
                     result[key] = self._add_calculation_provenance(
                         key, cached_result, ctx
                     )
@@ -566,7 +575,7 @@ class Engine:
         Raises:
             CircularDependencyError: If circular dependencies detected
         """
-        if not is_registered(target):
+        if not self.registry.is_registered(target):
             raise CalculationError(f"Calculation '{target}' is not registered")
 
         all_deps: set[str] = set()
@@ -582,8 +591,8 @@ class Engine:
 
             visited.add(name)
 
-            if is_registered(name):
-                for dep in deps(name):
+            if self.registry.is_registered(name):
+                for dep in self.registry.deps(name):
                     all_deps.add(dep)
                     collect_deps(dep, stack + (name,))
 
@@ -604,7 +613,7 @@ class Engine:
             CircularDependencyError: If circular dependencies detected
         """
         all_deps = self.get_dependencies(target)
-        registered = {dep for dep in all_deps if is_registered(dep)}
+        registered = {dep for dep in all_deps if self.registry.is_registered(dep)}
         unregistered = all_deps - registered
         return registered, unregistered
 
@@ -618,13 +627,4 @@ class Engine:
             - depends_on: Set of dependencies
             - docstring: The function's docstring
         """
-        from .registry import _dependencies, _registry
-
-        result = {}
-        for name, calc_func in _registry.items():
-            result[name] = {
-                "function": calc_func,
-                "depends_on": _dependencies[name].copy(),
-                "docstring": calc_func.__doc__ or "",
-            }
-        return result
+        return self.registry.get_all()

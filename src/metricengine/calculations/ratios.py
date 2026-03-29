@@ -20,6 +20,7 @@ from ..value import FV
 U = TypeVar("U", bound=Unit)
 
 ratios = Collection("ratios")
+__collections__ = (ratios,)
 
 # ── small local helpers ──────────────────────────────────────────────────────
 

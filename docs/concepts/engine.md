@@ -37,6 +37,11 @@ engine = me.Engine()
 That package-level setting is shared with `metricengine.typed_api`, so typed
 lookup helpers also respect the same empty-registry mode.
 
+Each engine owns its own registry by default. To intentionally share
+calculations across engines, create a `Registry` and pass it to each engine.
+The module-level helpers such as `metricengine.calc()` continue to use the
+shared `default_registry`.
+
 ## Usage Examples
 
 ### Basic Calculation

@@ -8,6 +8,7 @@ from metricengine import (
     Engine,
     MissingInputError,
     inputs_needed_for,
+    set_default_calculations_autoload,
 )
 
 
@@ -17,6 +18,7 @@ class TestBasicFunctionality:
     def setup_method(self):
         """Set up test fixtures."""
         # Don't clear registry - use production calculations
+        set_default_calculations_autoload(True)
         self.engine = Engine()
 
     def test_simple_functionality(self):

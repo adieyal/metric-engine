@@ -17,6 +17,7 @@ from ..units import Money, Percent, Ratio, Unit
 from ..value import FV
 
 variance = Collection("variance")
+__collections__ = (variance,)
 
 U = TypeVar("U", bound=Unit)
 

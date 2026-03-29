@@ -6,6 +6,7 @@ import pytest
 
 from metricengine.exceptions import CalculationError
 from metricengine.registry import (
+    Registry,
     calc,
     clear_registry,
     dependency_graph,
@@ -34,6 +35,32 @@ def clean_registry():
     # Restore original registry state
     _registry.update(original_registry)
     _dependencies.update(original_dependencies)
+
+
+class TestRegistryInstances:
+    """Test instance-based registry behavior."""
+
+    def test_registry_instances_do_not_share_state(self):
+        """Separate registry instances should be isolated."""
+        registry_a = Registry()
+        registry_b = Registry()
+
+        @registry_a.calc("only_a")
+        def only_a():
+            return 1
+
+        assert registry_a.is_registered("only_a") is True
+        assert registry_b.is_registered("only_a") is False
+
+    def test_default_module_registry_still_works(self):
+        """Module-level helpers should still use the default registry."""
+        clear_registry()
+
+        @calc("legacy_calc")
+        def legacy_calc():
+            return 42
+
+        assert get("legacy_calc") is legacy_calc
 
 
 class TestCalcDecorator:
