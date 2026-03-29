@@ -7,6 +7,7 @@ from decimal import Decimal
 from typing import Any
 
 from .exceptions import CalculationError, CircularDependencyError, MissingInputError
+from .loading import should_autoload_default_calculations
 from .policy import DEFAULT_POLICY, Policy
 from .policy_context import get_policy, use_policy
 from .registry import deps, get, is_registered
@@ -34,19 +35,20 @@ class Engine:
         self.default_policy: Policy = default_policy or DEFAULT_POLICY
         self.metric_policy: dict[str, Policy] = {}  # optional per-metric override
 
-        # Ensure calculations are registered on engine creation
-        try:
-            from .calculations import load_all
+        if should_autoload_default_calculations():
+            # Ensure calculations are registered on engine creation
+            try:
+                from .calculations import load_all
 
-            load_all()
-        except Exception as e:
-            # Don't silently ignore exceptions during development
-            import warnings
+                load_all()
+            except Exception as e:
+                # Don't silently ignore exceptions during development
+                import warnings
 
-            warnings.warn(f"Failed to load calculations: {e}", stacklevel=2)
-            # Re-raise in debug mode for development
-            if __debug__:
-                raise
+                warnings.warn(f"Failed to load calculations: {e}", stacklevel=2)
+                # Re-raise in debug mode for development
+                if __debug__:
+                    raise
 
     def _choose_policy(self, name: str, override: Policy | None) -> Policy:
         """

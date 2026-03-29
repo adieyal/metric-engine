@@ -111,6 +111,21 @@ print(f"Gross Profit: {gross_profit}")      # $35,000.00
 print(f"Operating Margin: {operating_margin}")  # 15.00%
 ```
 
+Built-in calculations are loaded automatically by default. If you want full
+control over what gets registered, disable autoload once at the package level
+before creating an engine:
+
+```python
+import metricengine as me
+
+me.set_default_calculations_autoload(False)
+
+engine = me.Engine()
+```
+
+With autoload disabled, the registry starts empty and `metricengine.typed_api`
+also stops auto-loading the built-in collections.
+
 ### Custom Calculations
 
 Register your own business logic:

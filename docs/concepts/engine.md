@@ -22,6 +22,21 @@ The **Engine** is the orchestrator that evaluates financial calculations, resolv
 - **Policy Selection**: Policies can be set globally, per-engine, per-metric, or per-call.
 - **Error Handling**: You can choose to raise exceptions or allow partial results with `allow_partial=True`.
 
+By default, creating an `Engine()` auto-loads the built-in calculation
+collections. If you want a blank starting point, disable calculation autoload
+once at the package level before constructing the engine:
+
+```python
+import metricengine as me
+
+me.set_default_calculations_autoload(False)
+
+engine = me.Engine()
+```
+
+That package-level setting is shared with `metricengine.typed_api`, so typed
+lookup helpers also respect the same empty-registry mode.
+
 ## Usage Examples
 
 ### Basic Calculation
@@ -110,6 +125,7 @@ class MyEngine(Engine):
 - Forgetting to provide required inputs will raise `MissingInputError` (unless `allow_partial=True`)
 - Circular dependencies are not allowed and will raise `CircularDependencyError`
 - Registering calculations with the same name will raise an error
+- Disabling autoload means built-in calculations are unavailable until you re-enable it or register calculations yourself
 
 ## Real-World Patterns
 

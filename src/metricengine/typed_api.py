@@ -2,6 +2,7 @@ from functools import lru_cache
 from typing import Any, Callable
 
 from .exceptions import CalculationError
+from .loading import should_autoload_default_calculations
 from .registry import deps
 from .registry import get as _get
 from .registry import list_calculations as _list
@@ -16,6 +17,9 @@ except Exception:
 # Ensure calculations are loaded when this module is imported
 def _ensure_calculations_loaded():
     """Ensure all calculation modules are imported and registered."""
+    if not should_autoload_default_calculations():
+        return
+
     try:
         # Import the calculations module and call load_all
         import importlib

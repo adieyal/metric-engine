@@ -49,6 +49,10 @@ from .exceptions import (
 
 # Formatting utilities
 from .formatting import format_currency, format_percent
+from .loading import (
+    set_default_calculations_autoload,
+    should_autoload_default_calculations,
+)
 
 # Null behavior configuration
 from .null_behaviour import NullBinaryMode, get_nulls
@@ -149,6 +153,8 @@ __all__ = [
     # Formatting
     "format_currency",
     "format_percent",
+    "set_default_calculations_autoload",
+    "should_autoload_default_calculations",
     # Rendering
     "Renderer",
     "register_renderer",

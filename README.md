@@ -114,6 +114,22 @@ print(f"Gross Margin: {gross_margin}")      # 40.00%
 print(f"Operating Profit: {operating_profit}")  # $160,000.00
 ```
 
+Built-in calculations load automatically by default when you create an `Engine()`.
+If you want to start with an empty registry and register calculations yourself,
+disable autoload once at the package level:
+
+```python
+import metricengine as me
+
+me.set_default_calculations_autoload(False)
+
+engine = me.Engine()
+```
+
+That package-level setting also applies to the typed API helpers in
+`metricengine.typed_api`, so they will not auto-register built-in calculations
+while autoload is disabled.
+
 ### Custom Calculations
 
 ```python
@@ -200,7 +216,7 @@ Operation: /
    Operation: -
    Inputs: 2 operand(s)
 
-2. Operating Profit = Gross Profit - OpEx  
+2. Operating Profit = Gross Profit - OpEx
    Value: 35,000.00
    Operation: -
    Inputs: 2 operand(s)
@@ -213,7 +229,7 @@ Operation: /
 
 **Use Cases:**
 - 🐛 **Debugging**: Trace exactly where calculation errors originate
-- 📋 **Compliance**: Generate audit trails for regulatory requirements  
+- 📋 **Compliance**: Generate audit trails for regulatory requirements
 - 🎓 **Education**: Show users how their rates/fees are calculated
 - 🔬 **Analysis**: Understand which inputs affect which outputs
 - 📊 **Documentation**: Auto-generate calculation documentation

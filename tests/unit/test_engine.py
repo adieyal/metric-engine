@@ -39,6 +39,27 @@ def manage_registry():
     _dependencies.update(original_dependencies)
 
 
+def test_engine_can_skip_loading_default_calculations():
+    """Engine can start with an empty registry when defaults are disabled."""
+    from metricengine import set_default_calculations_autoload
+    from metricengine.registry import list_calculations
+
+    set_default_calculations_autoload(False)
+
+    engine = Engine()
+
+    assert list_calculations() == {}
+
+    with pytest.raises(MissingInputError, match="gross_margin"):
+        engine.calculate("gross_margin", {"sales": 100, "cost_of_goods_sold": 60})
+
+
+def test_engine_does_not_accept_per_instance_default_loading_flag():
+    """Engine loading is controlled at the package level only."""
+    with pytest.raises(TypeError, match="load_defaults"):
+        Engine(load_defaults=False)
+
+
 class TestEngine:
     """Test the calculation engine."""
 

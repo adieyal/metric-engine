@@ -2,7 +2,7 @@
 from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from types import NoneType
-from typing import Any, Literal, SupportsFloat, TypeVar, overload
+from typing import Literal, SupportsFloat, TypeVar, overload
 
 from metricengine import Dimensionless, Money, Percent, Policy, Ratio, Unit
 from metricengine import FinancialValue as FV
@@ -11,7 +11,7 @@ from metricengine.utils import SupportsDecimal
 U = TypeVar("U", bound=Unit)
 
 class Engine:
-    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
+    def __init__(self, default_policy: Policy | None = None) -> None: ...
     @overload
     def calculate(
         self,
