@@ -155,7 +155,7 @@ def calculate_gross_margin(revenue: FV[Money], cogs: FV[Money]) -> FV[Ratio]:
         Gross margin as a ratio
     """
     if revenue.is_none() or cogs.is_none():
-        return FV.none(Ratio)
+        return FV.none_with_unit(Ratio)
 
     gross_profit = revenue - cogs
     return gross_profit / revenue

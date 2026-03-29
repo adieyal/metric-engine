@@ -10,6 +10,7 @@ import pytest
 
 from metricengine.provenance_config import (
     ProvenanceConfig,
+    _context_config,
     get_config,
     set_global_config,
 )
@@ -22,6 +23,9 @@ def reset_provenance_config():
     This fixture is automatically used for all tests to prevent test pollution
     from global provenance configuration changes.
     """
+    # Clear any leaked context-local override before reading or resetting config.
+    _context_config.set(None)
+
     # Save the original configuration
     original_config = get_config()
 
@@ -30,6 +34,9 @@ def reset_provenance_config():
     set_global_config(default_config)
 
     yield
+
+    # Clear any leaked context-local override before restoring global config.
+    _context_config.set(None)
 
     # Restore the original configuration after each test
     set_global_config(original_config)
