@@ -17,7 +17,7 @@ Key Features:
 from importlib.metadata import PackageNotFoundError, version
 from typing import Optional
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 try:
     _installed_version = version("metric-engine")

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "metric-engine-django"
-version = "0.2.0"
+version = "0.3.0"
 description = "Django integration for metric-engine."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -13,7 +13,7 @@ authors = [
   { name = "Your Name", email = "you@example.com" }
 ]
 dependencies = [
-  "metric-engine>=0.2.0",
+  "metric-engine>=0.3.0",
   "Django>=3.2",
 ]
 classifiers = [
