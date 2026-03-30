@@ -13,7 +13,7 @@ def default_quantizer_factory(decimal_places: int) -> Decimal:
 PercentDisplay = Literal["ratio", "percent"]
 
 # Keep imports at module scope so tests can patch
-from .units import Unit
+from .units import Unit  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class DisplayPolicy:
     including currency symbols, number formatting, and locale-specific
     conventions.
     """
- 
+
 
     # Locale/Currency
     locale: str = "en_ZA"  # BCP-47 or ICU id; e.g., "en_US", "fr_FR", "en_ZA"

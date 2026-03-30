@@ -1,4 +1,5 @@
-from decimal import Decimal as D, InvalidOperation
+from decimal import Decimal as D
+from decimal import InvalidOperation
 from unittest.mock import patch
 
 import pytest
@@ -1480,7 +1481,7 @@ def test_repr_unit_representation_failure_scenarios():
     from unittest.mock import patch
 
     # Test the _get_unit_repr method directly with edge cases
-    fv = FV(100)
+    FV(100)
 
     # Test with None unit
     fv_none = FV(100, unit=None)

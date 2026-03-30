@@ -392,7 +392,7 @@ class TestRatiosCalculations:
     def test_policy_resolution_from_multiple_sources(self):
         """Test that policy is correctly resolved from multiple FV inputs."""
         policy1 = Policy(decimal_places=2)
-        policy2 = Policy(decimal_places=3)
+        Policy(decimal_places=3)
 
         # First FV has policy, should be used
         numerator = FV(75, policy=policy1, unit=Money)

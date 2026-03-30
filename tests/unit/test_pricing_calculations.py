@@ -337,7 +337,7 @@ class TestPricingCalculations:
     def test_policy_resolution_from_multiple_fvs(self):
         """Test that policy is correctly resolved from multiple FV inputs."""
         policy1 = Policy(decimal_places=2)
-        policy2 = Policy(decimal_places=3)
+        Policy(decimal_places=3)
 
         # First FV has policy, should be used
         sales = FV(110, policy=policy1, unit=Money)

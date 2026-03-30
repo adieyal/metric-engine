@@ -313,7 +313,7 @@ _current_span_stack: ContextVar[list[dict[str, Any]]] = ContextVar(
 @dataclass(frozen=True)
 class Provenance:
     """Immutable provenance record for financial value calculations."""
-    
+
     __slots__ = ('id', 'op', 'inputs', 'meta')
 
     id: str  # Stable hash of operation + operands + policy

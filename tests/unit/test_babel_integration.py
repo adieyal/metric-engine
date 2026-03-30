@@ -141,7 +141,7 @@ class TestFinancialValueBabelIntegration:
     def test_locale_specific_formatting_if_babel_available(self):
         """Test locale-specific formatting if Babel is available."""
         try:
-            import babel
+            import babel  # noqa: F401
 
             babel_available = True
         except ImportError:

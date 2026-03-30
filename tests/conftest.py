@@ -3,9 +3,15 @@
 This module provides global test fixtures and configuration to ensure test isolation
 and consistent test behavior across the entire test suite.
 """
+import gc
+
 import pytest
 
-from metricengine.provenance_config import ProvenanceConfig, get_config, set_global_config
+from metricengine.provenance_config import (
+    ProvenanceConfig,
+    get_config,
+    set_global_config,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -30,18 +36,30 @@ def reset_provenance_config():
 
 @pytest.fixture(autouse=True)
 def reset_caches():
-    """Clear any caches before each test to ensure isolation.
+    """Clear any caches before and after each test to ensure isolation.
 
     This ensures that cached values from one test don't affect another.
     """
     try:
         from metricengine.provenance import clear_caches
+
         clear_caches()
     except (ImportError, AttributeError):
         # If clear_caches doesn't exist, skip silently
         pass
 
     yield
+
+    # Clear caches after test as well
+    try:
+        from metricengine.provenance import clear_caches
+
+        clear_caches()
+    except (ImportError, AttributeError):
+        pass
+
+    # Force garbage collection to clean up any weakrefs
+    gc.collect()
 
 
 # Mark slow tests

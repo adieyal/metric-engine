@@ -8,10 +8,10 @@ import pytest
 # Import babel to check if it's available
 babel = pytest.importorskip("babel", reason="Babel not available")
 
-from metricengine.formatters.babel_adapter import BabelFormatter
-from metricengine.formatters.base import BabelUnavailable, get_formatter
-from metricengine.policy import DisplayPolicy
-from metricengine.units import USD
+from metricengine.formatters.babel_adapter import BabelFormatter  # noqa: E402
+from metricengine.formatters.base import BabelUnavailable, get_formatter  # noqa: E402
+from metricengine.policy import DisplayPolicy  # noqa: E402
+from metricengine.units import USD  # noqa: E402
 
 
 class TestBabelFormatter:

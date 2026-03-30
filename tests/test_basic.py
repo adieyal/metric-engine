@@ -8,8 +8,6 @@ from metricengine import (
 
 
 def test_register_and_calculate():
-    results = {}
-
     @calc("add")
     def add(a: int, b: int) -> int:
         return a + b
