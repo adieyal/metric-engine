@@ -30,7 +30,7 @@ class TestFinancialValueBabelIntegration:
         assert "USD" in result or "US$" in result  # May show as symbol
         assert "1234" in result.replace("\xa0", "").replace(
             " ", ""
-        )  # Remove non-breaking spaces
+        ).replace(",", "")  # Remove non-breaking spaces and grouping commas
 
     def test_financial_value_money_with_unit_currency(self):
         """Test FV with Money unit that has currency code."""
