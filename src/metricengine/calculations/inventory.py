@@ -17,6 +17,7 @@ from ..units import Dimensionless, Money, Percent, Ratio  # phantom units
 from ..value import FV
 
 inventory = Collection("inventory")
+__collections__ = (inventory,)
 
 # ---- small helpers (module-local) -------------------------------------------
 

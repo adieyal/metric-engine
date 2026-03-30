@@ -4,6 +4,7 @@ This module provides the core data structures and utilities for tracking
 the provenance (lineage) of financial calculations. Every FinancialValue
 can maintain a complete record of how it was computed.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -305,16 +306,25 @@ except ImportError:
 
 
 # Context variables for span tracking
-_current_span_stack: ContextVar[list[dict[str, Any]]] = ContextVar(
-    "_current_span_stack", default=[]
+_current_span_stack: ContextVar[list[dict[str, Any]] | None] = ContextVar(
+    "_current_span_stack", default=None
 )
+
+
+def _get_span_stack() -> list[dict[str, Any]]:
+    """Get the current span stack, creating if needed."""
+    stack = _current_span_stack.get()
+    if stack is None:
+        stack = []
+        _current_span_stack.set(stack)
+    return stack
 
 
 @dataclass(frozen=True)
 class Provenance:
     """Immutable provenance record for financial value calculations."""
-    
-    __slots__ = ('id', 'op', 'inputs', 'meta')
+
+    __slots__ = ("id", "op", "inputs", "meta")
 
     id: str  # Stable hash of operation + operands + policy
     op: str  # Operation identifier ("+", "/", "calc:gross_margin", "literal")

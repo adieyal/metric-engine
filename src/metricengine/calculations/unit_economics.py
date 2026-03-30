@@ -15,6 +15,7 @@ from ..units import Dimensionless, Money
 from ..value import FV
 
 unit_economics = Collection("unit_economics")
+__collections__ = (unit_economics,)
 
 # ── small local helpers ──────────────────────────────────────────────────────
 

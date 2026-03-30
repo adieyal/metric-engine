@@ -1,4 +1,5 @@
 """Tests for unit-aware rendering system."""
+
 from __future__ import annotations
 
 from metricengine.rendering import (
@@ -414,7 +415,7 @@ class TestRenderingIntegrationWithUnits:
 
     def test_money_rendering_different_currencies(self):
         """Test rendering different currency units."""
-        renderer = HtmlRenderer()
+        HtmlRenderer()
 
         # Test various currencies
         currencies = [
@@ -435,7 +436,7 @@ class TestRenderingIntegrationWithUnits:
 
     def test_quantity_rendering_different_units(self):
         """Test rendering different quantity units."""
-        renderer = HtmlRenderer()
+        HtmlRenderer()
 
         quantities = ["kg", "L", "m", "ft", "pieces"]
 
@@ -450,7 +451,7 @@ class TestRenderingIntegrationWithUnits:
 
     def test_percent_rendering_different_codes(self):
         """Test rendering different percent unit codes."""
-        renderer = HtmlRenderer()
+        HtmlRenderer()
 
         # Default ratio
         ratio = Pct()
@@ -471,7 +472,7 @@ class TestRenderingIntegrationWithUnits:
 
     def test_custom_unit_rendering(self):
         """Test rendering custom unit types."""
-        renderer = HtmlRenderer()
+        HtmlRenderer()
 
         custom = NewUnit("Custom", "widgets")
         amount = FV(100, unit=custom)

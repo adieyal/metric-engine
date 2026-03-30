@@ -1,4 +1,5 @@
 """Basic integration tests for provenance functionality."""
+
 from decimal import Decimal
 
 from metricengine.provenance import Provenance

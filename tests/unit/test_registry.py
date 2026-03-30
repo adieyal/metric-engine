@@ -6,6 +6,7 @@ import pytest
 
 from metricengine.exceptions import CalculationError
 from metricengine.registry import (
+    Registry,
     calc,
     clear_registry,
     dependency_graph,
@@ -34,6 +35,32 @@ def clean_registry():
     # Restore original registry state
     _registry.update(original_registry)
     _dependencies.update(original_dependencies)
+
+
+class TestRegistryInstances:
+    """Test instance-based registry behavior."""
+
+    def test_registry_instances_do_not_share_state(self):
+        """Separate registry instances should be isolated."""
+        registry_a = Registry()
+        registry_b = Registry()
+
+        @registry_a.calc("only_a")
+        def only_a():
+            return 1
+
+        assert registry_a.is_registered("only_a") is True
+        assert registry_b.is_registered("only_a") is False
+
+    def test_default_module_registry_still_works(self):
+        """Module-level helpers should still use the default registry."""
+        clear_registry()
+
+        @calc("legacy_calc")
+        def legacy_calc():
+            return 42
+
+        assert get("legacy_calc") is legacy_calc
 
 
 class TestCalcDecorator:
@@ -518,13 +545,18 @@ class TestEdgeCases:
         for i in range(100):
             if i == 0:
 
-                @calc(f"calc_{i}")
-                def base_calc():
-                    return i
+                def make_base_calc(val):
+                    @calc(f"calc_{val}")
+                    def base_calc():
+                        return val
+
+                    return base_calc
+
+                make_base_calc(i)
             else:
                 exec(
                     f"""
-@calc("calc_{i}", depends_on=("calc_{i-1}",))
+@calc("calc_{i}", depends_on=("calc_{i - 1}",))
 def calc_{i}():
     return {i}
 """,
@@ -537,7 +569,7 @@ def calc_{i}():
             if i == 0:
                 assert deps(f"calc_{i}") == set()
             else:
-                assert deps(f"calc_{i}") == {f"calc_{i-1}"}
+                assert deps(f"calc_{i}") == {f"calc_{i - 1}"}
 
     def test_function_without_decorator_metadata(self):
         """Test that regular functions don't have calc metadata."""

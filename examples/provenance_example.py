@@ -6,7 +6,6 @@ This example demonstrates how to use provenance tracking in MetricEngine
 to understand and audit financial calculations.
 """
 
-
 from metricengine import Engine, FinancialValue
 from metricengine.provenance import calc_span, explain, to_trace_json
 from metricengine.provenance_config import (

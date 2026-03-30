@@ -1,6 +1,8 @@
 from importlib.metadata import entry_points
 from typing import Optional
 
+from .registry import Registry, default_registry
+
 
 def _load_entry_points(group: str):
     eps = entry_points()
@@ -10,8 +12,14 @@ def _load_entry_points(group: str):
     return eps.get(group, [])
 
 
-def load_plugins(context: Optional[dict] = None) -> int:
+def load_plugins(
+    context: Optional[dict] = None,
+    registry: Registry | None = None,
+) -> int:
     processed = 0
+    target_registry = registry or default_registry
+    effective_context = {} if context is None else dict(context)
+    effective_context.setdefault("registry", target_registry)
 
     for ep in _load_entry_points("metricengine.plugins"):
         try:
@@ -19,7 +27,7 @@ def load_plugins(context: Optional[dict] = None) -> int:
             plugin = obj() if isinstance(obj, type) else obj
             initialize = getattr(plugin, "initialize", None)
             if callable(initialize):
-                initialize(context=context)
+                initialize(context=effective_context)
             processed += 1
         except Exception:
             continue
@@ -30,11 +38,9 @@ def load_plugins(context: Optional[dict] = None) -> int:
             collection = obj() if isinstance(obj, type) else obj
             register_all = getattr(collection, "register_all", None)
             if callable(register_all):
-                # Late import to avoid heavy import cost if unused
-                from .registry import calc as _calc
 
-                def _register(name: Optional[str] = None):
-                    return _calc(name or "")
+                def _register(name: Optional[str] = None, *, depends_on=()):
+                    return target_registry.calc(name or "", depends_on=depends_on)
 
                 register_all(register=_register)
             processed += 1

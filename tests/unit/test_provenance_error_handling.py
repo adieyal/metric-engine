@@ -1,4 +1,5 @@
 """Tests for provenance error handling and graceful degradation."""
+
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
@@ -17,21 +18,8 @@ from metricengine.provenance_config import (
     update_global_config,
 )
 
-
-@pytest.fixture(autouse=True)
-def reset_provenance_config():
-    """Fixture to ensure each test starts with a clean provenance configuration."""
-    # Save the original configuration
-    original_config = get_config()
-
-    # Reset to default configuration before each test
-    default_config = ProvenanceConfig()
-    set_global_config(default_config)
-
-    yield
-
-    # Restore the original configuration after each test
-    set_global_config(original_config)
+# Note: reset_provenance_config fixture is now in conftest.py
+# and is automatically used for all tests
 
 
 class TestProvenanceConfig:
@@ -739,3 +727,15 @@ class TestEnhancedErrorHandling:
         assert len(successful_operations) > 0
         # Should not have uncaught exceptions
         assert len(errors_caught) == 0
+
+        # IMPORTANT: Clear any lingering state from threading + mocking
+        # The patches in threads may not clean up properly, so force cleanup
+        import hashlib
+        import importlib
+
+        # Reimport to ensure clean state
+        importlib.reload(hashlib)
+        # Clear all caches to remove any error-tainted state
+        from metricengine.provenance import clear_caches
+
+        clear_caches()

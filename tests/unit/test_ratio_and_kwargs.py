@@ -19,7 +19,7 @@ class TestRatioMethod:
         ratio = percentage.ratio()
         assert ratio.policy is not None
         assert ratio.policy.percent_style == "ratio"
-        assert ratio._is_percentage == False  # Should be False for ratio
+        assert ratio._is_percentage is False  # Should be False for ratio
         assert ratio.as_decimal() == Decimal("0.35")
 
         # Test 100%

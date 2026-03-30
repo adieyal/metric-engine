@@ -1,5 +1,12 @@
 # Metric Engine
 
+[![CI](https://github.com/adieyal/metric-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/adieyal/metric-engine/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/adieyal/metric-engine/branch/master/graph/badge.svg)](https://codecov.io/gh/adieyal/metric-engine)
+[![PyPI version](https://badge.fury.io/py/metric-engine.svg)](https://badge.fury.io/py/metric-engine)
+[![Python Versions](https://img.shields.io/pypi/pyversions/metric-engine.svg)](https://pypi.org/project/metric-engine/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 **Robust Python library for precision calculations with strong typing, policy-driven behavior, and bulletproof error handling.**
 
 Metric Engine provides a comprehensive foundation for building applications that require type-safe calculations, decimal precision, and graceful handling of missing data. Perfect for financial applications, business metrics, scientific calculations, or any domain where precision and type safety matter.
@@ -107,14 +114,33 @@ print(f"Gross Margin: {gross_margin}")      # 40.00%
 print(f"Operating Profit: {operating_profit}")  # $160,000.00
 ```
 
+Built-in calculations load automatically by default when you create an `Engine()`.
+Each engine gets its own registry unless you pass one explicitly.
+If you want to start with an empty registry and register calculations yourself,
+disable autoload once at the package level:
+
+```python
+import metricengine as me
+
+me.set_default_calculations_autoload(False)
+
+engine = me.Engine()
+```
+
+That package-level setting also applies to the typed API helpers in
+`metricengine.typed_api`, so they will not auto-register built-in calculations
+while autoload is disabled.
+
 ### Custom Calculations
 
 ```python
-from metricengine import calc, FV
+from metricengine import Engine, FV
 from metricengine.units import Money
 from metricengine.factories import money
 
-@calc("monthly_revenue", depends_on=("annual_revenue",))
+engine = Engine()
+
+@engine.registry.calc("monthly_revenue", depends_on=("annual_revenue",))
 def monthly_revenue(annual_revenue: FV[Money]) -> FV[Money]:
     """Calculate monthly revenue from annual."""
     if annual_revenue.is_none():
@@ -126,6 +152,10 @@ context = {"annual_revenue": money(1200000)}
 monthly = engine.calculate("monthly_revenue", context)
 print(f"Monthly Revenue: {monthly}")  # 100,000.00
 ```
+
+The module-level helpers such as `metricengine.calc()` still register against
+the shared `default_registry`. Use `engine.registry.calc(...)` when you want a
+calculation to belong only to one engine instance.
 
 ### Complete Calculation Traceability
 
@@ -193,7 +223,7 @@ Operation: /
    Operation: -
    Inputs: 2 operand(s)
 
-2. Operating Profit = Gross Profit - OpEx  
+2. Operating Profit = Gross Profit - OpEx
    Value: 35,000.00
    Operation: -
    Inputs: 2 operand(s)
@@ -206,7 +236,7 @@ Operation: /
 
 **Use Cases:**
 - 🐛 **Debugging**: Trace exactly where calculation errors originate
-- 📋 **Compliance**: Generate audit trails for regulatory requirements  
+- 📋 **Compliance**: Generate audit trails for regulatory requirements
 - 🎓 **Education**: Show users how their rates/fees are calculated
 - 🔬 **Analysis**: Understand which inputs affect which outputs
 - 📊 **Documentation**: Auto-generate calculation documentation

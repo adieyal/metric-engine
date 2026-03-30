@@ -24,7 +24,7 @@ from metricengine import Engine
 from metricengine import FinancialValue as FV
 from metricengine.policy import Policy
 from metricengine.provenance import explain, to_trace_json
-from metricengine.registry import calc, clear_registry
+from metricengine.registry import calc, clear_registry, default_registry
 from metricengine.units import (
     ConversionContext,
     ConversionPolicy,
@@ -260,7 +260,7 @@ class TestMultiCurrencyFinancialCalculations:
         eur = MoneyUnit("EUR")
         gbp = MoneyUnit("GBP")
 
-        engine = Engine()
+        engine = Engine(registry=default_registry)
 
         # Revenue in different currencies
         inputs = {
@@ -287,7 +287,7 @@ class TestMultiCurrencyFinancialCalculations:
         usd = MoneyUnit("USD")
         eur = MoneyUnit("EUR")
 
-        engine = Engine()
+        engine = Engine(registry=default_registry)
 
         # Profit in EUR, Revenue in USD - should handle conversion
         profit_eur = FV(Decimal("2000.00"), unit=eur)
@@ -770,7 +770,7 @@ class TestProvenanceTrackingThroughConversions:
 
         # Check that conversion node is included
         conversion_node = None
-        for node_id, node_data in trace_json["nodes"].items():
+        for _node_id, node_data in trace_json["nodes"].items():
             if node_data["op"] == "convert":
                 conversion_node = node_data
                 break
@@ -836,9 +836,9 @@ class TestConversionPerformance:
                     if rate <= 0:
                         rate = Decimal("0.5")
 
-                    # Create a closure to capture the rate value
-                    def make_converter(conversion_rate):
-                        @register_conversion(from_unit, to_unit)
+                    # Create a closure to capture the rate value and units
+                    def make_converter(conversion_rate, src_unit, dst_unit):
+                        @register_conversion(src_unit, dst_unit)
                         def convert_currency(
                             value: Decimal, ctx: ConversionContext
                         ) -> Decimal:
@@ -846,7 +846,7 @@ class TestConversionPerformance:
 
                         return convert_currency
 
-                    make_converter(rate)
+                    make_converter(rate, from_unit, to_unit)
 
     def teardown_method(self):
         """Clean up conversion registry after each test."""

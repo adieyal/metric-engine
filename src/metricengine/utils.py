@@ -77,15 +77,15 @@ def to_decimal(val: SupportsDecimal) -> Decimal | None:
     # Native float
     if isinstance(val, float):
         try:
-            return Decimal(repr(val))
+            return Decimal(repr(float(val)))
         except InvalidOperation as e:
             return _fail(e, f"Invalid float: {val!r}")
 
-    # Generic SupportsFloat
-    if isinstance(val, SupportsFloat):
+    # Generic float-like values (e.g. Fraction, numpy scalar types)
+    if hasattr(val, "__float__"):
         try:
             return Decimal(repr(float(val)))
-        except (InvalidOperation, ValueError, TypeError) as e:
+        except InvalidOperation as e:
             return _fail(e, f"Invalid float-like: {val!r}")
 
     # Anything else is unsupported

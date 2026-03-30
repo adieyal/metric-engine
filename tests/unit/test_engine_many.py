@@ -8,6 +8,7 @@ from metricengine import (
     Engine,
     MissingInputError,
     inputs_needed_for,
+    set_default_calculations_autoload,
 )
 
 
@@ -16,6 +17,7 @@ class TestCalculateMany:
 
     def setup_method(self):
         """Set up test fixtures."""
+        set_default_calculations_autoload(True)
         self.engine = Engine()
 
     def test_calculate_many_success(self):
@@ -169,6 +171,10 @@ class TestCalculateMany:
 class TestInputHelpers:
     """Test the helper functions."""
 
+    def setup_method(self):
+        """Ensure built-in autoload is enabled for helper tests."""
+        set_default_calculations_autoload(True)
+
     def test_inputs_needed_for_simple(self):
         """Test finding inputs for simple calculations."""
         # gross_profit needs sales and cost
@@ -212,6 +218,7 @@ class TestEngineIntegration:
 
     def setup_method(self):
         """Set up test fixtures."""
+        set_default_calculations_autoload(True)
         self.engine = Engine()
 
     def test_calculate_single_via_many(self):

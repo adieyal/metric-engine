@@ -111,15 +111,33 @@ print(f"Gross Profit: {gross_profit}")      # $35,000.00
 print(f"Operating Margin: {operating_margin}")  # 15.00%
 ```
 
+Built-in calculations are loaded automatically by default. If you want full
+control over what gets registered, disable autoload once at the package level
+before creating an engine:
+
+```python
+import metricengine as me
+
+me.set_default_calculations_autoload(False)
+
+engine = me.Engine()
+```
+
+With autoload disabled, the registry starts empty and `metricengine.typed_api`
+also stops auto-loading the built-in collections.
+
 ### Custom Calculations
 
 Register your own business logic:
 
 ```python
-from metricengine import calc
+from metricengine import Engine, FV
+from metricengine.factories import money
 from metricengine.units import Money, Ratio
 
-@calc("monthly_revenue", depends_on=("annual_revenue",))
+engine = Engine()
+
+@engine.registry.calc("monthly_revenue", depends_on=("annual_revenue",))
 def monthly_revenue(annual_revenue: FV[Money]) -> FV[Money]:
     """Calculate monthly revenue from annual."""
     if annual_revenue.is_none():
@@ -131,6 +149,11 @@ context = {"annual_revenue": money(1200000)}
 monthly = engine.calculate("monthly_revenue", context)
 print(f"Monthly Revenue: {monthly}")  # $100,000.00
 ```
+
+`Engine()` creates a private registry by default. If you want to share
+calculations across multiple engines, create a `Registry` and pass it to each
+engine explicitly. The module-level decorator `metricengine.calc(...)` still
+registers against the shared `default_registry`.
 
 ## Policy-Driven Formatting
 

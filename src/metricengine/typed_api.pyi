@@ -2,7 +2,7 @@
 from collections.abc import Sequence
 from decimal import Decimal
 from types import NoneType
-from typing import Any, Literal, Protocol, SupportsFloat, TypeVar, Union, overload
+from typing import Any, Literal, Protocol, SupportsFloat, TypeVar, overload
 
 from metricengine import Dimensionless, Money, Percent, Ratio, Unit
 from metricengine import FinancialValue as FV
@@ -103,7 +103,7 @@ class Calc_average_value(Protocol):
     def __call__(
         self,
         values: Sequence[
-            Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
         ],
     ) -> FV[U]: ...
 
@@ -681,12 +681,17 @@ class Calc_weighted_average(Protocol):
     def __call__(
         self,
         values: Sequence[
-            Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
         ],
         weights: Sequence[
-            Union[
-                int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[Dimensionless]
-            ]
+            int
+            | float
+            | str
+            | Decimal
+            | SupportsFloat
+            | NoneType
+            | FV
+            | FV[Dimensionless]
         ],
     ) -> FV[U]: ...
 
@@ -696,7 +701,7 @@ def get_calc(name: Literal["average_inventory"]) -> Calc_average_inventory: ...
 def get_calc(name: Literal["average_value"]) -> Calc_average_value: ...
 @overload
 def get_calc(
-    name: Literal["beverage_cost_percentage"]
+    name: Literal["beverage_cost_percentage"],
 ) -> Calc_beverage_cost_percentage: ...
 @overload
 def get_calc(name: Literal["beverage_cost_ratio"]) -> Calc_beverage_cost_ratio: ...
@@ -714,17 +719,17 @@ def get_calc(name: Literal["cogs_ratio"]) -> Calc_cogs_ratio: ...
 def get_calc(name: Literal["compound_growth_rate"]) -> Calc_compound_growth_rate: ...
 @overload
 def get_calc(
-    name: Literal["compound_growth_rate_percent"]
+    name: Literal["compound_growth_rate_percent"],
 ) -> Calc_compound_growth_rate_percent: ...
 @overload
 def get_calc(name: Literal["contribution_margin"]) -> Calc_contribution_margin: ...
 @overload
 def get_calc(
-    name: Literal["contribution_margin_ratio"]
+    name: Literal["contribution_margin_ratio"],
 ) -> Calc_contribution_margin_ratio: ...
 @overload
 def get_calc(
-    name: Literal["contribution_margin_ratio_raw"]
+    name: Literal["contribution_margin_ratio_raw"],
 ) -> Calc_contribution_margin_ratio_raw: ...
 @overload
 def get_calc(name: Literal["cost_per_unit"]) -> Calc_cost_per_unit: ...
@@ -734,7 +739,7 @@ def get_calc(name: Literal["cost_percent"]) -> Calc_cost_percent: ...
 def get_calc(name: Literal["cost_percent_ex_tax"]) -> Calc_cost_percent_ex_tax: ...
 @overload
 def get_calc(
-    name: Literal["cost_percentage_with_tax"]
+    name: Literal["cost_percentage_with_tax"],
 ) -> Calc_cost_percentage_with_tax: ...
 @overload
 def get_calc(name: Literal["cost_ratio"]) -> Calc_cost_ratio: ...
@@ -764,17 +769,17 @@ def get_calc(name: Literal["food_cost_percentage"]) -> Calc_food_cost_percentage
 def get_calc(name: Literal["food_cost_ratio"]) -> Calc_food_cost_ratio: ...
 @overload
 def get_calc(
-    name: Literal["gross_margin_percentage"]
+    name: Literal["gross_margin_percentage"],
 ) -> Calc_gross_margin_percentage: ...
 @overload
 def get_calc(
-    name: Literal["gross_margin_percentage_ex_tax"]
+    name: Literal["gross_margin_percentage_ex_tax"],
 ) -> Calc_gross_margin_percentage_ex_tax: ...
 @overload
 def get_calc(name: Literal["gross_margin_ratio"]) -> Calc_gross_margin_ratio: ...
 @overload
 def get_calc(
-    name: Literal["gross_margin_ratio_ex_tax"]
+    name: Literal["gross_margin_ratio_ex_tax"],
 ) -> Calc_gross_margin_ratio_ex_tax: ...
 @overload
 def get_calc(name: Literal["gross_profit"]) -> Calc_gross_profit: ...
@@ -794,7 +799,7 @@ def get_calc(name: Literal["net_margin_ratio"]) -> Calc_net_margin_ratio: ...
 def get_calc(name: Literal["net_margin_with_tax"]) -> Calc_net_margin_with_tax: ...
 @overload
 def get_calc(
-    name: Literal["net_margin_with_tax_ratio"]
+    name: Literal["net_margin_with_tax_ratio"],
 ) -> Calc_net_margin_with_tax_ratio: ...
 @overload
 def get_calc(name: Literal["net_profit"]) -> Calc_net_profit: ...
@@ -804,17 +809,17 @@ def get_calc(name: Literal["net_profit_with_tax"]) -> Calc_net_profit_with_tax: 
 def get_calc(name: Literal["operating_margin"]) -> Calc_operating_margin: ...
 @overload
 def get_calc(
-    name: Literal["operating_margin_ratio"]
+    name: Literal["operating_margin_ratio"],
 ) -> Calc_operating_margin_ratio: ...
 @overload
 def get_calc(
-    name: Literal["original_delivery_sales"]
+    name: Literal["original_delivery_sales"],
 ) -> Calc_original_delivery_sales: ...
 @overload
 def get_calc(name: Literal["percentage_change"]) -> Calc_percentage_change: ...
 @overload
 def get_calc(
-    name: Literal["percentage_change_ratio"]
+    name: Literal["percentage_change_ratio"],
 ) -> Calc_percentage_change_ratio: ...
 @overload
 def get_calc(name: Literal["percentage_of_total"]) -> Calc_percentage_of_total: ...
@@ -850,13 +855,13 @@ def get_calc(name: Literal["variance_amount"]) -> Calc_variance_amount: ...
 def get_calc(name: Literal["variance_percentage"]) -> Calc_variance_percentage: ...
 @overload
 def get_calc(
-    name: Literal["variance_percentage_from_components"]
+    name: Literal["variance_percentage_from_components"],
 ) -> Calc_variance_percentage_from_components: ...
 @overload
 def get_calc(name: Literal["variance_ratio"]) -> Calc_variance_ratio: ...
 @overload
 def get_calc(
-    name: Literal["variance_ratio_from_components"]
+    name: Literal["variance_ratio_from_components"],
 ) -> Calc_variance_ratio_from_components: ...
 @overload
 def get_calc(name: Literal["weighted_average"]) -> Calc_weighted_average: ...
@@ -867,7 +872,7 @@ def average_inventory(
 ) -> FV[Money]: ...
 def average_value(
     values: Sequence[
-        Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+        int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
     ],
 ) -> FV[U]: ...
 def beverage_cost_percentage(beverage_cost_ratio: FV[Ratio]) -> FV[Percent]: ...
@@ -891,7 +896,7 @@ def compound_growth_rate(
 def compound_growth_rate_percent(compound_growth_rate: FV[Ratio]) -> FV[Percent]: ...
 def contribution_margin(revenue: FV[Money], variable_costs: FV[Money]) -> FV[Money]: ...
 def contribution_margin_ratio(
-    contribution_margin_ratio_raw: FV[Ratio]
+    contribution_margin_ratio_raw: FV[Ratio],
 ) -> FV[Percent]: ...
 def contribution_margin_ratio_raw(
     contribution_margin: FV[Money], revenue: FV[Money]
@@ -925,7 +930,7 @@ def food_cost_ratio(
 ) -> FV[Ratio]: ...
 def gross_margin_percentage(gross_margin_ratio: FV[Ratio]) -> FV[Percent]: ...
 def gross_margin_percentage_ex_tax(
-    gross_margin_ratio_ex_tax: FV[Ratio]
+    gross_margin_ratio_ex_tax: FV[Ratio],
 ) -> FV[Percent]: ...
 def gross_margin_ratio(gross_profit: FV[Money], sales: FV[Money]) -> FV[Ratio]: ...
 def gross_margin_ratio_ex_tax(
@@ -984,9 +989,9 @@ def variance_ratio_from_components(
 ) -> FV[Ratio]: ...
 def weighted_average(
     values: Sequence[
-        Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+        int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
     ],
     weights: Sequence[
-        Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[Dimensionless]]
+        int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[Dimensionless]
     ],
 ) -> FV[U]: ...

@@ -6,33 +6,24 @@ metricengine.registry_collections
    :undoc-members:
    :show-inheritance:
 
-Registry Collection Class
--------------------------
+Collection Class
+----------------
 
-.. autoclass:: RegistryCollection
+.. autoclass:: Collection
    :members:
    :special-members: __init__
 
-Collection Management
---------------------
+Registry Context Helpers
+------------------------
 
-.. autofunction:: create_collection
+.. autofunction:: using_registry
 
-.. autofunction:: get_collection
+.. autofunction:: get_active_registry
 
-.. autofunction:: list_collections
+Notes
+-----
 
-Built-in Collections
---------------------
-
-.. autodata:: growth_collection
-
-   Growth-related calculations.
-
-.. autodata:: profitability_collection
-
-   Profitability and margin calculations.
-
-.. autodata:: ratio_collection
-
-   Financial ratio calculations.
+Collections bind decorators to a concrete registry. Built-in calculation
+modules expose their collections via ``__collections__`` so
+``metricengine.calculations.load_all(...)`` can register them into any
+``Registry`` instance.

@@ -2,16 +2,23 @@
 from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from types import NoneType
-from typing import Any, Literal, SupportsFloat, TypeVar, Union, overload
+from typing import Literal, SupportsFloat, TypeVar, overload
 
 from metricengine import Dimensionless, Money, Percent, Policy, Ratio, Unit
 from metricengine import FinancialValue as FV
+from metricengine.registry import Registry
 from metricengine.utils import SupportsDecimal
 
 U = TypeVar("U", bound=Unit)
 
 class Engine:
-    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
+    registry: Registry
+
+    def __init__(
+        self,
+        default_policy: Policy | None = None,
+        registry: Registry | None = None,
+    ) -> None: ...
     @overload
     def calculate(
         self,
@@ -37,7 +44,7 @@ class Engine:
         policy: Policy | None = ...,
         allow_partial: bool = ...,
         values: Sequence[
-            Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
         ],
     ) -> FV[U]:
         """\
@@ -1228,12 +1235,17 @@ class Engine:
         policy: Policy | None = ...,
         allow_partial: bool = ...,
         values: Sequence[
-            Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
         ],
         weights: Sequence[
-            Union[
-                int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[Dimensionless]
-            ]
+            int
+            | float
+            | str
+            | Decimal
+            | SupportsFloat
+            | NoneType
+            | FV
+            | FV[Dimensionless]
         ],
     ) -> FV[U]:
         """\

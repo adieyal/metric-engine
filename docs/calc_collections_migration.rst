@@ -26,7 +26,7 @@ These instructions are for an LLM (or human) to migrate existing calculations to
 
    metricengine/
      calculations/
-       __init__.py     # contains load_all()
+       __init__.py     # contains load_all(registry: Registry | None = None)
        pricing.py
        growth.py
        profitability.py
@@ -37,10 +37,18 @@ These instructions are for an LLM (or human) to migrate existing calculations to
 .. code-block:: python
 
    # calculations/__init__.py
-   def load_all() -> None:
-       from . import pricing, growth, profitability  # noqa: F401
+   def load_all(registry: Registry | None = None) -> None:
+       target = registry or default_registry
+       register_all(target)
 
-4. Use relative imports inside calculation modules:
+4. Built-in calculation modules should expose their collections explicitly:
+
+.. code-block:: python
+
+   pricing = Collection("pricing")
+   __collections__ = (pricing,)
+
+5. Use relative imports inside calculation modules:
 
 .. code-block:: python
 
@@ -59,9 +67,11 @@ These instructions are for an LLM (or human) to migrate existing calculations to
 .. code-block:: python
 
    pricing = Collection("pricing")
+   __collections__ = (pricing,)
 
 - Register each function with ``@pricing.calc("name", depends_on=(...))``.
 - Dependencies are strings; the collection auto-prefixes relative names.
+- For engine-local collections, bind explicitly with ``Collection("pricing", registry=engine.registry)``.
 
 Template:
 

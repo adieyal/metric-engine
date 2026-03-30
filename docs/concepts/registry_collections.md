@@ -21,7 +21,14 @@ Think of a collection as a toolbox for a specific domain—each with its own set
 
 ## How Collections Work
 
-A collection is created by instantiating the `Collection` class with a namespace. You then use the `.calc()` decorator to register functions under that namespace, optionally specifying dependencies.
+A collection is created by instantiating the `Collection` class with a
+namespace. You then use the `.calc()` decorator to register functions under
+that namespace, optionally specifying dependencies.
+
+Collections bind to a registry at creation time:
+- `Collection("name")` uses the active registration context when one exists
+- otherwise it falls back to the shared `default_registry`
+- `Collection("name", registry=my_registry)` binds explicitly to a specific registry
 
 ### Example: Defining a Collection
 
@@ -41,6 +48,8 @@ def net_profit(gross_profit, expenses):
 
 - Each calculation is registered with a unique name (e.g., `gross_profit`)
 - Dependencies are declared by name, enabling automatic resolution
+- Built-in calculation modules declare their collections explicitly via
+  `__collections__` so they can be loaded into any registry instance
 
 ## Built-in Collections
 
@@ -57,10 +66,24 @@ Metric Engine provides several built-in collections:
 You can import and use these collections directly:
 
 ```python
-from metricengine.calculations import growth
+from metricengine import Engine
+from metricengine.calculations import load_all
+from metricengine.registry import Registry
 
-cagr = growth.compound_annual_growth_rate(start_value, end_value, years)
+registry = Registry()
+load_all(registry)
+engine = Engine(registry=registry)
+
+cagr = engine.calculate(
+    "compound_growth_rate",
+    initial_value=100,
+    final_value=150,
+    periods=3,
+)
 ```
+
+Calling `load_all()` with no arguments still loads the built-in calculations
+into `default_registry` for compatibility with the module-level API.
 
 ## Dependency Management
 
@@ -86,7 +109,7 @@ You can define your own collections for domain-specific logic:
 ```python
 from metricengine.registry_collections import Collection
 
-my_metrics = Collection("my_metrics")
+my_metrics = Collection("my_metrics", registry=engine.registry)
 
 @my_metrics.calc("custom_kpi", depends_on=("input1", "input2"))
 def custom_kpi(input1, input2):
@@ -110,6 +133,9 @@ def custom_kpi(input1, input2):
 - Registering two calculations with the same name in the same collection will raise an error
 - Forgetting to declare a dependency may result in missing or incorrect results
 - Circular dependencies are not allowed and will be detected at registration
+- Assuming module-level `@calc(...)` decorators automatically appear in private
+  engines will lead to missing-calculation errors; use `engine.registry.calc(...)`
+  or pass `registry=default_registry` if you want explicit sharing
 
 ## Real-World Example: Custom Domain Package
 
@@ -118,7 +144,7 @@ Suppose you want to add a set of KPIs for your business domain:
 ```python
 from metricengine.registry_collections import Collection
 
-kpi = Collection("my_kpi")
+kpi = Collection("my_kpi", registry=engine.registry)
 
 @kpi.calc("customer_lifetime_value", depends_on=("avg_purchase_value", "purchase_frequency", "customer_lifespan"))
 def customer_lifetime_value(avg_purchase_value, purchase_frequency, customer_lifespan):

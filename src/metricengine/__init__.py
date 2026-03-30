@@ -17,7 +17,7 @@ Key Features:
 from importlib.metadata import PackageNotFoundError, version
 from typing import Optional
 
-__version__ = "0.1.0"
+__version__ = "0.3.1"
 
 try:
     _installed_version = version("metric-engine")
@@ -49,6 +49,10 @@ from .exceptions import (
 
 # Formatting utilities
 from .formatting import format_currency, format_percent
+from .loading import (
+    set_default_calculations_autoload,
+    should_autoload_default_calculations,
+)
 
 # Null behavior configuration
 from .null_behaviour import NullBinaryMode, get_nulls
@@ -61,7 +65,15 @@ from .policy_context import PolicyResolution, get_policy, use_policy
 from .provenance import calc_span, explain, get_provenance_graph, to_trace_json
 
 # Registry and calculation system
-from .registry import calc, deps, get, is_registered, list_calculations
+from .registry import (
+    Registry,
+    calc,
+    default_registry,
+    deps,
+    get,
+    is_registered,
+    list_calculations,
+)
 
 # Rendering system
 from .rendering import Renderer, get_renderer, list_renderers, register_renderer
@@ -95,9 +107,12 @@ from .units import (
 from .value import FV, FinancialValue
 
 
-def load_plugins(context: Optional[dict] = None) -> int:
+def load_plugins(
+    context: Optional[dict] = None,
+    registry: Registry | None = None,
+) -> int:
     """Load all available plugins with optional context."""
-    return _integrations.load_plugins(context)
+    return _integrations.load_plugins(context, registry=registry)
 
 
 # Public API - organized by category
@@ -145,10 +160,14 @@ __all__ = [
     "list_calculations",
     "deps",
     "is_registered",
+    "Registry",
+    "default_registry",
     "Engine",
     # Formatting
     "format_currency",
     "format_percent",
+    "set_default_calculations_autoload",
+    "should_autoload_default_calculations",
     # Rendering
     "Renderer",
     "register_renderer",

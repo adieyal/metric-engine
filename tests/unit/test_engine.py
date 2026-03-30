@@ -12,7 +12,7 @@ from metricengine.exceptions import (
 )
 from metricengine.null_behaviour import NullBinaryMode, with_binary
 from metricengine.policy import Policy
-from metricengine.registry import calc
+from metricengine.registry import Registry
 from metricengine.utils import SupportsDecimal
 from metricengine.value import FinancialValue
 
@@ -39,24 +39,160 @@ def manage_registry():
     _dependencies.update(original_dependencies)
 
 
+def test_engine_can_skip_loading_default_calculations():
+    """Engine can start with an empty registry when defaults are disabled."""
+    from metricengine import set_default_calculations_autoload
+
+    set_default_calculations_autoload(False)
+
+    engine = Engine()
+
+    assert engine.registry.list_calculations() == {}
+
+    with pytest.raises(MissingInputError, match="gross_margin"):
+        engine.calculate("gross_margin", {"sales": 100, "cost_of_goods_sold": 60})
+
+
+def test_engine_does_not_accept_per_instance_default_loading_flag():
+    """Engine loading is controlled at the package level only."""
+    with pytest.raises(TypeError, match="load_defaults"):
+        Engine(load_defaults=False)
+
+
+def test_load_all_defaults_to_default_registry():
+    """The calculations loader should preserve its no-arg compatibility API."""
+    from metricengine.calculations import load_all
+    from metricengine.registry import clear_registry, is_registered
+
+    clear_registry()
+
+    load_all()
+
+    assert is_registered("gross_profit") is True
+
+
+def test_builtin_calculation_modules_declare_explicit_collections():
+    """Built-in calculation modules should declare their collections explicitly."""
+    import importlib
+
+    from metricengine.calculations import _MODULE_NAMES
+
+    for module_name in _MODULE_NAMES:
+        module = importlib.import_module(f"metricengine.calculations.{module_name}")
+        assert hasattr(module, "__collections__")
+
+
+def test_engine_creates_private_registry_when_none_provided():
+    """Each engine should get its own registry by default."""
+    engine_a = Engine()
+    engine_b = Engine()
+
+    @engine_a.registry.calc("engine_a_only")
+    def engine_a_only():
+        return 10
+
+    assert engine_a.registry.is_registered("engine_a_only") is True
+    assert engine_b.registry.is_registered("engine_a_only") is False
+
+
+def test_engines_can_share_registry_when_explicitly_provided():
+    """Engines using the same registry should share calculations."""
+    shared = Registry()
+    engine_a = Engine(registry=shared)
+    engine_b = Engine(registry=shared)
+
+    @shared.calc("shared_calc")
+    def shared_calc():
+        return 10
+
+    assert engine_a.calculate("shared_calc").as_decimal() == Decimal("10")
+    assert engine_b.calculate("shared_calc").as_decimal() == Decimal("10")
+
+
+def test_engine_autoload_populates_only_its_own_registry():
+    """Autoloaded built-ins should populate the engine registry, not the global one."""
+    from metricengine import set_default_calculations_autoload
+    from metricengine.registry import clear_registry, list_calculations
+
+    clear_registry()
+    set_default_calculations_autoload(True)
+
+    engine = Engine(registry=Registry())
+
+    assert engine.registry.is_registered("gross_profit") is True
+    assert list_calculations() == {}
+
+
+def test_unregistering_from_one_engine_registry_does_not_affect_another():
+    """Mutating one engine registry should not affect another engine."""
+    engine_a = Engine(registry=Registry())
+    engine_b = Engine(registry=Registry())
+
+    @engine_a.registry.calc("engine_a_only")
+    def engine_a_only():
+        return 10
+
+    @engine_b.registry.calc("engine_b_only")
+    def engine_b_only():
+        return 20
+
+    engine_a.registry.unregister("engine_a_only")
+
+    assert engine_a.registry.is_registered("engine_a_only") is False
+    assert engine_b.registry.is_registered("engine_b_only") is True
+
+
+def test_shared_registry_mutation_is_visible_to_all_engines_using_it():
+    """Mutating a shared registry should be visible to all engines using it."""
+    shared = Registry()
+    engine_a = Engine(registry=shared)
+    engine_b = Engine(registry=shared)
+
+    @shared.calc("shared_value")
+    def shared_value():
+        return 5
+
+    shared.unregister("shared_value")
+
+    assert engine_a.registry.is_registered("shared_value") is False
+    assert engine_b.registry.is_registered("shared_value") is False
+
+
+def test_builtins_can_autoload_into_multiple_private_registries():
+    """Built-ins should be registerable into separate registries without conflicts."""
+    from metricengine import set_default_calculations_autoload
+
+    set_default_calculations_autoload(True)
+
+    engine_a = Engine(registry=Registry())
+    engine_b = Engine(registry=Registry())
+
+    assert engine_a.registry.is_registered("gross_profit") is True
+    assert engine_b.registry.is_registered("gross_profit") is True
+
+
 class TestEngine:
     """Test the calculation engine."""
 
     def setup_method(self):
+        self.engine = Engine(registry=Registry())
+
         # Register some test calculations
-        @calc("simple_calc", depends_on=("input_a",))
+        @self.engine.registry.calc("simple_calc", depends_on=("input_a",))
         def simple_calc(input_a):
             return input_a * FinancialValue(Decimal("2"), input_a.policy)
 
-        @calc("dependent_calc", depends_on=("simple_calc", "input_b"))
+        @self.engine.registry.calc(
+            "dependent_calc", depends_on=("simple_calc", "input_b")
+        )
         def dependent_calc(simple_calc, input_b):
             return simple_calc + input_b
 
-        @calc("complex_calc", depends_on=("dependent_calc", "input_c"))
+        @self.engine.registry.calc(
+            "complex_calc", depends_on=("dependent_calc", "input_c")
+        )
         def complex_calc(dependent_calc, input_c):
             return dependent_calc * input_c
-
-        self.engine = Engine()
 
     def test_simple_calculation(self):
         """Test simple calculation with direct input."""
@@ -99,15 +235,15 @@ class TestEngine:
         """Test detection of circular dependencies."""
 
         # Create circular dependency
-        @calc("calc_a", depends_on=("calc_b",))
+        @self.engine.registry.calc("calc_a", depends_on=("calc_b",))
         def calc_a(calc_b):
             return calc_b + Decimal("1")
 
-        @calc("calc_b", depends_on=("calc_c",))
+        @self.engine.registry.calc("calc_b", depends_on=("calc_c",))
         def calc_b(calc_c):
             return calc_c + Decimal("1")
 
-        @calc("calc_c", depends_on=("calc_a",))
+        @self.engine.registry.calc("calc_c", depends_on=("calc_a",))
         def calc_c(calc_a):
             return calc_a + Decimal("1")
 
@@ -140,7 +276,7 @@ class TestEngine:
 
     def test_default_policy(self):
         """Test engine with default policy."""
-        engine = Engine(Policy(decimal_places=1))
+        engine = Engine(Policy(decimal_places=1), registry=self.engine.registry)
         ctx = {"input_a": Decimal("10.567")}
 
         result = engine.calculate("simple_calc", ctx)
@@ -182,7 +318,7 @@ class TestEngine:
     def test_calculation_returns_none(self):
         """Test calculation that returns None is handled as valid undefined value."""
 
-        @calc("null_calc", depends_on=("input_a",))
+        @self.engine.registry.calc("null_calc", depends_on=("input_a",))
         def null_calc(input_a):  # noqa: ARG001
             return None
 
@@ -196,7 +332,7 @@ class TestEngine:
     def test_calculation_exception(self):
         """Test handling of exceptions in calculations."""
 
-        @calc("error_calc", depends_on=("input_a",))
+        @self.engine.registry.calc("error_calc", depends_on=("input_a",))
         def error_calc(input_a):  # noqa: ARG001
             raise ValueError("Test error")
 
@@ -243,13 +379,15 @@ class TestEngine:
         """Test that intermediate results are cached."""
         call_count = 0
 
-        @calc("counting_calc", depends_on=("input_a",))
+        @self.engine.registry.calc("counting_calc", depends_on=("input_a",))
         def counting_calc(input_a):
             nonlocal call_count
             call_count += 1
             return input_a * Decimal("2")
 
-        @calc("uses_counting_twice", depends_on=("counting_calc", "input_b"))
+        @self.engine.registry.calc(
+            "uses_counting_twice", depends_on=("counting_calc", "input_b")
+        )
         def uses_counting_twice(counting_calc, input_b):
             # This would call counting_calc twice without caching
             return counting_calc + (counting_calc * input_b)

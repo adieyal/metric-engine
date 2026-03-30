@@ -24,6 +24,7 @@ Example:
     >>> html_output = amount.render("html")
     >>> print(html_output)  # <span class="amount positive">$1,234.56</span>
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable

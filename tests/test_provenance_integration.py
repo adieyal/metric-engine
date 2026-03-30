@@ -31,7 +31,7 @@ from metricengine.provenance import (
     get_provenance_graph,
     to_trace_json,
 )
-from metricengine.registry import calc, clear_registry
+from metricengine.registry import calc, clear_registry, default_registry
 from metricengine.units import Money, Percent
 from metricengine.value import FinancialValue
 
@@ -84,7 +84,7 @@ class TestComplexCalculationProvenance:
 
     def test_complex_financial_calculation_provenance(self):
         """Test provenance tracking through a complex financial calculation chain."""
-        engine = Engine()
+        engine = Engine(registry=default_registry)
 
         # Input values with meaningful names
         inputs = {
@@ -134,7 +134,7 @@ class TestComplexCalculationProvenance:
 
     def test_named_inputs_provenance(self):
         """Test provenance tracking with named inputs through engine calculations."""
-        engine = Engine()
+        engine = Engine(registry=default_registry)
 
         # Use named inputs in calculation
         result = engine.calculate(
@@ -165,7 +165,7 @@ class TestComplexCalculationProvenance:
 
     def test_calculation_spans_integration(self):
         """Test provenance tracking with calculation spans."""
-        engine = Engine()
+        engine = Engine(registry=default_registry)
 
         with calc_span("quarterly_analysis", quarter="Q1", year=2024):
             # Perform calculations within span
@@ -412,7 +412,7 @@ class TestBackwardCompatibility:
             def double(input_value):
                 return input_value * FinancialValue(2)
 
-            engine = Engine()
+            engine = Engine(registry=default_registry)
 
             # Old-style usage should work
             result = engine.calculate("double", {"input_value": FinancialValue(50)})
@@ -508,7 +508,7 @@ class TestPerformanceRegression:
             def multiply_result(add_inputs, c):
                 return add_inputs * c
 
-            engine = Engine()
+            engine = Engine(registry=default_registry)
             iterations = 100
 
             start_time = time.perf_counter()

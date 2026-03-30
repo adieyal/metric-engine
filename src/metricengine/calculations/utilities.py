@@ -20,6 +20,7 @@ from ..utils import SupportsDecimal
 from ..value import FV
 
 utilities = Collection("utilities")
+__collections__ = (utilities,)
 
 U = TypeVar("U", bound=Unit)
 

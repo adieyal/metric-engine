@@ -471,8 +471,8 @@ class ConversionPolicy:
 
 
 # Context variable for scoped conversion policy
-_current_conversion_policy: ContextVar[ConversionPolicy] = ContextVar(
-    "_current_conversion_policy", default=ConversionPolicy()
+_current_conversion_policy: ContextVar[ConversionPolicy | None] = ContextVar(
+    "_current_conversion_policy", default=None
 )
 
 
@@ -505,7 +505,8 @@ def get_current_conversion_policy() -> ConversionPolicy:
     Returns:
         Current ConversionPolicy in effect
     """
-    return _current_conversion_policy.get()
+    policy = _current_conversion_policy.get()
+    return policy if policy is not None else ConversionPolicy()
 
 
 def convert_decimal(
@@ -615,18 +616,18 @@ def convert_decimal(
                     previous_value = current_value
                     current_value = conversion.fn(current_value, context)
                     _logger.debug(
-                        f"Path step {i+1}: {conversion.src} to {conversion.dst}: {previous_value} -> {current_value}"
+                        f"Path step {i + 1}: {conversion.src} to {conversion.dst}: {previous_value} -> {current_value}"
                     )
                 except Exception as e:
                     # Conversion function in path raised an exception
-                    error_msg = f"Conversion function failed in path step {i+1} ({conversion.src} to {conversion.dst}): {type(e).__name__}: {e}"
+                    error_msg = f"Conversion function failed in path step {i + 1} ({conversion.src} to {conversion.dst}): {type(e).__name__}: {e}"
                     _logger.error(error_msg)
 
                     if policy.strict:
                         raise ValueError(error_msg) from e
                     else:
                         _logger.warning(
-                            f"Returning original value due to conversion function error in path step {i+1}"
+                            f"Returning original value due to conversion function error in path step {i + 1}"
                         )
                         return value
 

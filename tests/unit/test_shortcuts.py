@@ -497,7 +497,7 @@ class TestEdgeCases:
             elif name.startswith("calc_"):
                 num = int(name.split("_")[1])
                 if num > 0:
-                    return {f"calc_{num-1}"}
+                    return {f"calc_{num - 1}"}
             return set()
 
         mock_is_registered.side_effect = mock_is_registered_side_effect
@@ -509,7 +509,7 @@ class TestEdgeCases:
     def test_iterable_types(self):
         """Test that functions work with different iterable types."""
         with patch("metricengine.shortcuts.is_registered") as mock_is_reg:
-            with patch("metricengine.shortcuts.reg_deps") as mock_deps:
+            with patch("metricengine.shortcuts.reg_deps"):
                 mock_is_reg.return_value = False
 
                 # Test with list

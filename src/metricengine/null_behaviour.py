@@ -96,8 +96,8 @@ class NullBehavior:
 
 
 # Global context variable for storing current null behavior
-_current_nulls: ContextVar[NullBehavior] = ContextVar(
-    "_current_nulls", default=NullBehavior()
+_current_nulls: ContextVar[NullBehavior | None] = ContextVar(
+    "_current_nulls", default=None
 )
 
 
@@ -125,7 +125,8 @@ class use_nulls:
 
 def get_nulls() -> NullBehavior:
     """Return the currently active null behavior."""
-    return _current_nulls.get()
+    nulls = _current_nulls.get()
+    return nulls if nulls is not None else NullBehavior()
 
 
 @contextmanager

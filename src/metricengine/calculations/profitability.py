@@ -18,6 +18,7 @@ from ..value import FV
 from .rules import skip_if_negative_sales
 
 profitability = Collection("profitability")
+__collections__ = (profitability,)
 
 # ── small local helpers ──────────────────────────────────────────────────────
 
