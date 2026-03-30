@@ -1,4 +1,5 @@
 """Tests for provenance tracking in arithmetic operations."""
+
 from decimal import Decimal
 
 import pytest

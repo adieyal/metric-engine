@@ -26,7 +26,6 @@ class DisplayPolicy:
     conventions.
     """
 
-
     # Locale/Currency
     locale: str = "en_ZA"  # BCP-47 or ICU id; e.g., "en_US", "fr_FR", "en_ZA"
     currency: str = "ZAR"  # ISO 4217 code (fallback if FV.unit is not Money)

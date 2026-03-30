@@ -38,6 +38,7 @@ Example:
 
 See README.md for comprehensive usage examples and best practices.
 """
+
 from __future__ import annotations
 
 from contextvars import ContextVar
@@ -201,9 +202,9 @@ def _div_result_unit(a: type[Unit], b: type[Unit]) -> type[Unit] | None:
 class FinancialValue(Generic[U]):
     _value: SupportsDecimal
     policy: Policy | None = None
-    unit: NewUnit | type[
-        Unit
-    ] | None = Dimensionless  # Support both new and legacy unit systems, default to legacy for backward compatibility
+    unit: NewUnit | type[Unit] | None = (
+        Dimensionless  # Support both new and legacy unit systems, default to legacy for backward compatibility
+    )
     _is_percentage: bool = field(default=False, compare=False)
     _prov: Provenance | None = field(default=None, compare=False)
 
@@ -765,8 +766,9 @@ class FinancialValue(Generic[U]):
     # ------------------------------------------------ arithmetic dunders
 
     @overload
-    def __add__(self: FinancialValue[U], other: FinancialValue[U]) -> FinancialValue[U]:
-        ...
+    def __add__(
+        self: FinancialValue[U], other: FinancialValue[U]
+    ) -> FinancialValue[U]: ...
 
     def __add__(self, other):
         return self._binary_with_provenance(
@@ -778,8 +780,9 @@ class FinancialValue(Generic[U]):
         return self.__add__(other)
 
     @overload
-    def __sub__(self: FinancialValue[U], other: FinancialValue[U]) -> FinancialValue[U]:
-        ...
+    def __sub__(
+        self: FinancialValue[U], other: FinancialValue[U]
+    ) -> FinancialValue[U]: ...
 
     def __sub__(self, other):
         return self._binary_with_provenance(
@@ -794,8 +797,7 @@ class FinancialValue(Generic[U]):
         )
 
     @overload
-    def __mul__(self, other: FinancialValue[Ratio]) -> FinancialValue[U]:
-        ...
+    def __mul__(self, other: FinancialValue[Ratio]) -> FinancialValue[U]: ...
 
     def __mul__(self, other):
         return self._binary_with_provenance(
@@ -806,8 +808,7 @@ class FinancialValue(Generic[U]):
         return self.__mul__(other)
 
     @overload
-    def __truediv__(self, other: FinancialValue[Ratio]) -> FinancialValue[U]:
-        ...
+    def __truediv__(self, other: FinancialValue[Ratio]) -> FinancialValue[U]: ...
 
     def __truediv__(self, other):
         def div(x, y):

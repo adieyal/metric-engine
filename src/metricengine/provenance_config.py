@@ -3,6 +3,7 @@
 This module provides global configuration options for controlling provenance
 tracking behavior, including performance optimizations and error handling.
 """
+
 from __future__ import annotations
 
 import logging

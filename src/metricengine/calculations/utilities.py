@@ -90,9 +90,9 @@ def weighted_average(
         unit = _first_unit_from_values(values)
         return _none_with(unit, pol)
 
-    pairs: list[
-        tuple[SupportsDecimal | FV[U], SupportsDecimal | FV[Dimensionless]]
-    ] = list(zip(values, weights))
+    pairs: list[tuple[SupportsDecimal | FV[U], SupportsDecimal | FV[Dimensionless]]] = (
+        list(zip(values, weights))
+    )
 
     # Delegate to shared weighted reducer
     return fv_weighted_mean(pairs, mode=NullReductionMode.SKIP)

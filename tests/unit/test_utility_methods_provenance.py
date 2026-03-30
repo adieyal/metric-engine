@@ -1,4 +1,5 @@
 """Tests for provenance tracking in FinancialValue utility methods."""
+
 from decimal import Decimal
 
 from metricengine import FinancialValue as FV

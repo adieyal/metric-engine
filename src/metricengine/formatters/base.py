@@ -1,4 +1,5 @@
 """Base formatter protocol and builtin implementation."""
+
 from __future__ import annotations
 
 from decimal import Decimal
@@ -18,9 +19,7 @@ class BabelUnavailable(Exception):
 class Formatter(Protocol):
     """Protocol for formatting financial values."""
 
-    def money(
-        self, amount: Decimal, unit: type | None, display: DisplayPolicy
-    ) -> str:
+    def money(self, amount: Decimal, unit: type | None, display: DisplayPolicy) -> str:
         """Format a monetary amount with currency symbol."""
         ...
 
@@ -49,9 +48,7 @@ class Formatter(Protocol):
 class BuiltinFormatter:
     """Fallback formatter that doesn't require Babel."""
 
-    def money(
-        self, amount: Decimal, unit: type | None, display: DisplayPolicy
-    ) -> str:
+    def money(self, amount: Decimal, unit: type | None, display: DisplayPolicy) -> str:
         """Format money using basic formatting."""
         # Use unit.code if unit.category == "Money", else display.currency
         from ..units import Money

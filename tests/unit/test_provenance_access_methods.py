@@ -1,4 +1,5 @@
 """Tests for provenance access and query methods in FinancialValue."""
+
 from decimal import Decimal
 
 import pytest

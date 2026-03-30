@@ -529,7 +529,7 @@ class TestEdgeCases:
             else:
                 exec(
                     f"""
-@calc("calc_{i}", depends_on=("calc_{i-1}",))
+@calc("calc_{i}", depends_on=("calc_{i - 1}",))
 def calc_{i}():
     return {i}
 """,
@@ -542,7 +542,7 @@ def calc_{i}():
             if i == 0:
                 assert deps(f"calc_{i}") == set()
             else:
-                assert deps(f"calc_{i}") == {f"calc_{i-1}"}
+                assert deps(f"calc_{i}") == {f"calc_{i - 1}"}
 
     def test_function_without_decorator_metadata(self):
         """Test that regular functions don't have calc metadata."""

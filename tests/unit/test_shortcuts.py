@@ -497,7 +497,7 @@ class TestEdgeCases:
             elif name.startswith("calc_"):
                 num = int(name.split("_")[1])
                 if num > 0:
-                    return {f"calc_{num-1}"}
+                    return {f"calc_{num - 1}"}
             return set()
 
         mock_is_registered.side_effect = mock_is_registered_side_effect

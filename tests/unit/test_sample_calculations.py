@@ -1,6 +1,5 @@
 """Tests for sample calculations module."""
 
-
 from metricengine.calculations.sample import SampleCalculations
 
 
