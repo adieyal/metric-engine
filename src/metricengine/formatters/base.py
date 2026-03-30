@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import TYPE_CHECKING, Optional, Protocol
+from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from ..policy import DisplayPolicy
@@ -19,7 +19,7 @@ class Formatter(Protocol):
     """Protocol for formatting financial values."""
 
     def money(
-        self, amount: Decimal, unit: Optional[type], display: DisplayPolicy
+        self, amount: Decimal, unit: type | None, display: DisplayPolicy
     ) -> str:
         """Format a monetary amount with currency symbol."""
         ...
@@ -38,7 +38,7 @@ class Formatter(Protocol):
         unit: type[Unit],
         decimal_places: int,
         thousands_sep: bool,
-        currency_symbol: Optional[str],
+        currency_symbol: str | None,
         currency_position: str,
         negative_parentheses: bool,
     ) -> str:
@@ -50,7 +50,7 @@ class BuiltinFormatter:
     """Fallback formatter that doesn't require Babel."""
 
     def money(
-        self, amount: Decimal, unit: Optional[type], display: DisplayPolicy
+        self, amount: Decimal, unit: type | None, display: DisplayPolicy
     ) -> str:
         """Format money using basic formatting."""
         # Use unit.code if unit.category == "Money", else display.currency
@@ -116,7 +116,7 @@ class BuiltinFormatter:
         unit: type[Unit],
         decimal_places: int,
         thousands_sep: bool,
-        currency_symbol: Optional[str],
+        currency_symbol: str | None,
         currency_position: str,
         negative_parentheses: bool,
     ) -> str:

@@ -518,9 +518,14 @@ class TestEdgeCases:
         for i in range(100):
             if i == 0:
 
-                @calc(f"calc_{i}")
-                def base_calc():
-                    return i
+                def make_base_calc(val):
+                    @calc(f"calc_{val}")
+                    def base_calc():
+                        return val
+
+                    return base_calc
+
+                make_base_calc(i)
             else:
                 exec(
                     f"""

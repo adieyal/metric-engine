@@ -2,7 +2,7 @@
 from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from types import NoneType
-from typing import Any, Literal, SupportsFloat, TypeVar, Union, overload
+from typing import Any, Literal, SupportsFloat, TypeVar, overload
 
 from metricengine import Dimensionless, Money, Percent, Policy, Ratio, Unit
 from metricengine import FinancialValue as FV
@@ -37,7 +37,7 @@ class Engine:
         policy: Policy | None = ...,
         allow_partial: bool = ...,
         values: Sequence[
-            Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
         ],
     ) -> FV[U]:
         """\
@@ -1228,12 +1228,10 @@ class Engine:
         policy: Policy | None = ...,
         allow_partial: bool = ...,
         values: Sequence[
-            Union[int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[U]]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[U]
         ],
         weights: Sequence[
-            Union[
-                int, float, str, Decimal, SupportsFloat, NoneType, FV, FV[Dimensionless]
-            ]
+            int | float | str | Decimal | SupportsFloat | NoneType | FV | FV[Dimensionless]
         ],
     ) -> FV[U]:
         """\

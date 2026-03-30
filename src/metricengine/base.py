@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any
 
 from .policy import Policy
 from .units import NewUnit
@@ -16,7 +16,7 @@ class CalculationService:
     def __init__(self, policy: Policy | None = None):
         self._policy = policy or Policy()
 
-    def _fv(self, x: SupportsDecimal, *, unit: Optional[NewUnit] = None) -> FV:
+    def _fv(self, x: SupportsDecimal, *, unit: NewUnit | None = None) -> FV:
         """Create a FinancialValue with the service's policy and optional unit.
 
         Args:
