@@ -5,6 +5,7 @@ and consistent test behavior across the entire test suite.
 """
 
 import gc
+import importlib
 
 import pytest
 
@@ -49,22 +50,25 @@ def reset_caches():
     This ensures that cached values from one test don't affect another.
     """
     try:
-        from metricengine.provenance import clear_caches
-
-        clear_caches()
-    except (ImportError, AttributeError):
-        # If clear_caches doesn't exist, skip silently
+        provenance_module = importlib.import_module("metricengine.provenance")
+    except ImportError:
         pass
+    else:
+        clear_caches = getattr(provenance_module, "clear_caches", None)
+        if callable(clear_caches):
+            clear_caches()
 
     yield
 
     # Clear caches after test as well
     try:
-        from metricengine.provenance import clear_caches
-
-        clear_caches()
-    except (ImportError, AttributeError):
+        provenance_module = importlib.import_module("metricengine.provenance")
+    except ImportError:
         pass
+    else:
+        clear_caches = getattr(provenance_module, "clear_caches", None)
+        if callable(clear_caches):
+            clear_caches()
 
     # Force garbage collection to clean up any weakrefs
     gc.collect()

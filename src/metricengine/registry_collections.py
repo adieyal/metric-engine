@@ -32,6 +32,7 @@ class Collection:
         self.ns = namespace.strip(".")
         self.registry = registry or get_active_registry()
         self._registered_functions: list[Callable[..., object]] = []
+        self._registered_function_set: set[Callable[..., object]] = set()
 
     def _qualify(self, name: str) -> str:
         # Flatten names for public API; allow explicit absolute via ":" prefix
@@ -44,8 +45,9 @@ class Collection:
 
         def decorator(fn: Callable[..., object]) -> Callable[..., object]:
             registered = registry_decorator(fn)
-            if registered not in self._registered_functions:
+            if registered not in self._registered_function_set:
                 self._registered_functions.append(registered)
+                self._registered_function_set.add(registered)
             return registered
 
         return decorator
