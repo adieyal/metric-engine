@@ -85,7 +85,7 @@ def to_decimal(val: SupportsDecimal) -> Decimal | None:
     if hasattr(val, "__float__"):
         try:
             return Decimal(repr(float(val)))
-        except (InvalidOperation, ValueError, TypeError) as e:
+        except InvalidOperation as e:
             return _fail(e, f"Invalid float-like: {val!r}")
 
     # Anything else is unsupported

@@ -132,6 +132,7 @@ Register your own business logic:
 
 ```python
 from metricengine import Engine, FV
+from metricengine.factories import money
 from metricengine.units import Money, Ratio
 
 engine = Engine()

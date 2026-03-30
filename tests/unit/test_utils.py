@@ -300,6 +300,26 @@ class TestToDecimal:
             # Skip if numpy is not available
             pytest.skip("numpy not available")
 
+    def test_float_like_value_error_propagates(self):
+        """Float-like objects raising ValueError should not be swallowed."""
+
+        class BadFloatValue:
+            def __float__(self):
+                raise ValueError("bad float conversion")
+
+        with pytest.raises(ValueError, match="bad float conversion"):
+            to_decimal(BadFloatValue())
+
+    def test_float_like_type_error_propagates(self):
+        """Float-like objects raising TypeError should not be swallowed."""
+
+        class BadFloatType:
+            def __float__(self):
+                raise TypeError("wrong float conversion")
+
+        with pytest.raises(TypeError, match="wrong float conversion"):
+            to_decimal(BadFloatType())
+
     def test_error_message_content(self):
         """Test that error messages contain useful information."""
         with use_nulls(NullBehavior(binary=NullBinaryMode.RAISE)):

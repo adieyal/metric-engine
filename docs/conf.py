@@ -6,8 +6,8 @@ sys.path.insert(0, os.path.abspath("../src"))
 project = "Metric Engine"
 copyright = "2025, Metric Engine Contributors"
 author = "Metric Engine Contributors"
-version = "0.3.0"
-release = "0.3.0"
+version = "0.3.1"
+release = "0.3.1"
 
 extensions = [
     "sphinx.ext.autodoc",
